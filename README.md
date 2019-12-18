@@ -9,6 +9,8 @@ Better Reflection
 Better Reflection is a reflection API that aims to improve and provide more features than PHP's built-in
 [reflection API](https://php.net/manual/en/book.reflection.php).
 
+**This fork brings back support for PHP 7.1**
+
 ## Why is it better?
 
 * You can reflect on classes that are not already loaded, without loading them
