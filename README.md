@@ -1,8 +1,8 @@
 Better Reflection
 =================
 
-[![Build status](https://github.com/Roave/BetterReflection/workflows/Build/badge.svg?branch=master)](https://github.com/Roave/BetterReflection/actions?query=workflow%3ABuild+branch%3Amaster)
-[![Type Coverage](https://shepherd.dev/github/Roave/BetterReflection/coverage.svg)](https://shepherd.dev/github/Roave/BetterReflection)
+[![Build status](https://github.com/ondrejmirtes/BetterReflection/workflows/Build/badge.svg?branch=master)](https://github.com/ondrejmirtes/BetterReflection/actions?query=workflow%3ABuild+branch%3Amaster)
+[![Type Coverage](https://shepherd.dev/github/ondrejmirtes/BetterReflection/coverage.svg)](https://shepherd.dev/github/ondrejmirtes/BetterReflection)
 [![Latest Stable Version](https://poser.pugx.org/roave/better-reflection/v/stable)](https://packagist.org/packages/roave/better-reflection)
 [![License](https://poser.pugx.org/roave/better-reflection/license)](https://packagist.org/packages/roave/better-reflection)
 
@@ -31,7 +31,7 @@ Be sure to read more in the [feature documentation](docs/features.md).
 Require using composer:
 
 ```shell
-$ composer require roave/better-reflection
+$ composer require ondrejmirtes/better-reflection
 ```
 
 ## Usage
@@ -52,7 +52,7 @@ $classInfo = (new BetterReflection())
 * [Basic usage instructions](docs/usage.md)
 * [Using types](docs/types.md)
 * [The features](docs/features.md)
-* [Test suite](https://github.com/Roave/BetterReflection/blob/master/test/README.md)
+* [Test suite](https://github.com/ondrejmirtes/BetterReflection/blob/master/test/README.md)
 * [AST extraction](docs/ast-extraction.md)
 * [Reflection modification](docs/reflection-modification.md)
 
