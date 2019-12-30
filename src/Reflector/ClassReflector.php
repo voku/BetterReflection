@@ -10,12 +10,16 @@ use Roave\BetterReflection\Reflection\Reflection;
 use Roave\BetterReflection\Reflection\ReflectionClass;
 use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
+use function array_key_exists;
 use function assert;
 
 class ClassReflector implements Reflector
 {
     /** @var SourceLocator */
     private $sourceLocator;
+
+    /** @var (ReflectionClass|null)[] */
+    private $cachedReflections = [];
 
     public function __construct(SourceLocator $sourceLocator)
     {
@@ -31,12 +35,21 @@ class ClassReflector implements Reflector
      */
     public function reflect(string $className) : Reflection
     {
-        $identifier = new Identifier($className, new IdentifierType(IdentifierType::IDENTIFIER_CLASS));
+        if (array_key_exists($className, $this->cachedReflections)) {
+            $classInfo = $this->cachedReflections[$className];
+        } else {
+            $identifier = new Identifier($className, new IdentifierType(IdentifierType::IDENTIFIER_CLASS));
 
-        $classInfo = $this->sourceLocator->locateIdentifier($this, $identifier);
-        assert($classInfo instanceof ReflectionClass || $classInfo === null);
+            $classInfo = $this->sourceLocator->locateIdentifier($this, $identifier);
+            assert($classInfo instanceof ReflectionClass || $classInfo === null);
+            $this->cachedReflections[$className] = $classInfo;
+        }
 
         if ($classInfo === null) {
+            if (! isset($identifier)) {
+                $identifier = new Identifier($className, new IdentifierType(IdentifierType::IDENTIFIER_CLASS));
+            }
+
             throw Exception\IdentifierNotFound::fromIdentifier($identifier);
         }
 
