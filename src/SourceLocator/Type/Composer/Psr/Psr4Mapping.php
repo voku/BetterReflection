@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Roave\BetterReflection\SourceLocator\Type\Composer\Psr;
 
 use Roave\BetterReflection\Identifier\Identifier;
-use Roave\BetterReflection\SourceLocator\Type\Composer\Psr\Exception\InvalidPrefixMapping;
 use function array_filter;
 use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
-use function is_dir;
 use function ltrim;
 use function rtrim;
 use function str_replace;
@@ -33,8 +31,6 @@ final class Psr4Mapping implements PsrAutoloaderMapping
     /** @param array<string, array<int, string>> $mappings */
     public static function fromArrayMappings(array $mappings) : self
     {
-        self::assertValidMapping($mappings);
-
         $instance = new self();
 
         $instance->mappings = array_map(
@@ -81,6 +77,10 @@ final class Psr4Mapping implements PsrAutoloaderMapping
         return array_filter(
             $this->mappings,
             static function (string $prefix) use ($className) : bool {
+                if ($prefix === '') {
+                    return false;
+                }
+
                 return strpos($className, $prefix) === 0;
             },
             ARRAY_FILTER_USE_KEY
@@ -91,29 +91,5 @@ final class Psr4Mapping implements PsrAutoloaderMapping
     public function directories() : array
     {
         return array_values(array_unique(array_merge([], ...array_values($this->mappings))));
-    }
-
-    /**
-     * @param array<string, array<int, string>> $mappings
-     *
-     * @throws InvalidPrefixMapping
-     */
-    private static function assertValidMapping(array $mappings) : void
-    {
-        foreach ($mappings as $prefix => $paths) {
-            if ($prefix === '') {
-                throw InvalidPrefixMapping::emptyPrefixGiven();
-            }
-
-            if ($paths === []) {
-                throw InvalidPrefixMapping::emptyPrefixMappingGiven($prefix);
-            }
-
-            foreach ($paths as $path) {
-                if (! is_dir($path)) {
-                    throw InvalidPrefixMapping::prefixMappingIsNotADirectory($prefix, $path);
-                }
-            }
-        }
     }
 }
