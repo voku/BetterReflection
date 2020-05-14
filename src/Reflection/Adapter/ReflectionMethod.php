@@ -28,6 +28,11 @@ class ReflectionMethod extends CoreReflectionMethod
         $this->betterReflectionMethod = $betterReflectionMethod;
     }
 
+    public function getBetterReflection() : BetterReflectionMethod
+    {
+        return $this->betterReflectionMethod;
+    }
+
     /**
      * {@inheritDoc}
      *
