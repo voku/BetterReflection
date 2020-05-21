@@ -55,6 +55,12 @@ abstract class ReflectionFunctionAbstract
     /** @var Reflector */
     private $reflector;
 
+    /** @var string|null */
+    private $cachedName;
+
+    /** @var string|null */
+    private $cachedShortName;
+
     /** @var Parser|null */
     private static $parser;
 
@@ -123,11 +129,15 @@ abstract class ReflectionFunctionAbstract
      */
     public function getName() : string
     {
-        if (! $this->inNamespace()) {
-            return $this->getShortName();
+        if ($this->cachedName !== null) {
+            return $this->cachedName;
         }
 
-        return $this->getNamespaceName() . '\\' . $this->getShortName();
+        if (! $this->inNamespace()) {
+            return $this->cachedName = $this->getShortName();
+        }
+
+        return $this->cachedName = $this->getNamespaceName() . '\\' . $this->getShortName();
     }
 
     /**
@@ -136,12 +146,16 @@ abstract class ReflectionFunctionAbstract
      */
     public function getShortName() : string
     {
-        $initializedNode = $this->getNode();
-        if ($initializedNode instanceof Node\Expr\Closure) {
-            return self::CLOSURE_NAME;
+        if ($this->cachedShortName !== null) {
+            return $this->cachedShortName;
         }
 
-        return $initializedNode->name->name;
+        $initializedNode = $this->getNode();
+        if ($initializedNode instanceof Node\Expr\Closure) {
+            return $this->cachedShortName = self::CLOSURE_NAME;
+        }
+
+        return $this->cachedShortName = $initializedNode->name->name;
     }
 
     /**
