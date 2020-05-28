@@ -99,7 +99,7 @@ final class PhpStormStubsSourceStubber implements SourceStubber
 
         $this->classMap    = array_change_key_case(PhpStormStubsMap::CLASSES);
         $this->functionMap = array_change_key_case(PhpStormStubsMap::FUNCTIONS);
-        $this->constantMap = array_change_key_case(PhpStormStubsMap::CONSTANTS);
+        $this->constantMap = PhpStormStubsMap::CONSTANTS;
     }
 
     public function generateClassStub(string $className) : ?StubData
@@ -145,7 +145,10 @@ final class PhpStormStubsSourceStubber implements SourceStubber
 
     public function generateConstantStub(string $constantName) : ?StubData
     {
-        $lowercaseConstantName = strtolower($constantName);
+        $lowercaseConstantName = $constantName;
+        if (in_array($constantName, ['TRUE', 'FALSE', 'NULL'], true)) {
+            $lowercaseConstantName = strtolower($constantName);
+        }
 
         if (! array_key_exists($lowercaseConstantName, $this->constantMap)) {
             return null;
