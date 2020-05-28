@@ -173,7 +173,7 @@ class FileReadTrapStreamWrapperTest extends TestCase
 
         $nonExistingFile = __DIR__ . uniqid('non-existing-file', true);
 
-        $this->expectWarning();
+        $this->expectException(Warning::class);
 
         self::assertSame(
             'another value produced by the function',
