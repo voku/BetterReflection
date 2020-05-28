@@ -18,6 +18,7 @@ jobs:
       matrix:
         dependencies: ["lowest", "highest"]
         php-version:
+          - "7.1"
           - "7.2"
           - "7.3"
           - "7.4"
@@ -61,6 +62,7 @@ jobs:
       matrix:
         dependencies: ["lowest", "highest"]
         php-version:
+          - "7.1"
           - "7.2"
           - "7.3"
           - "7.4"
@@ -104,6 +106,7 @@ jobs:
       matrix:
         dependencies: ["lowest", "highest"]
         php-version:
+          - "7.1"
           - "7.2"
           - "7.3"
           - "7.4"
@@ -160,6 +163,9 @@ jobs:
 
       - name: "Install dependencies"
         run: "composer install"
+
+      - name: "Install CS"
+        run: "composer require --dev doctrine/coding-standard:^7.0.2"
 
       - name: "Coding Standard"
         run: "vendor/bin/phpcs"
