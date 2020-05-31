@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Roave\BetterReflectionTest\SourceLocator\SourceStubber;
 
+use PhpParser\Lexer\Emulative;
+use PhpParser\ParserFactory;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass as CoreReflectionClass;
 use ReflectionFunction as CoreReflectionFunction;
 use ReflectionMethod as CoreReflectionMethod;
+use ReflectionNamedType;
 use ReflectionParameter as CoreReflectionParameter;
 use Roave\BetterReflection\Reflection\ReflectionClass;
 use Roave\BetterReflection\Reflection\ReflectionConstant;
@@ -17,6 +20,7 @@ use Roave\BetterReflection\Reflector\ClassReflector;
 use Roave\BetterReflection\Reflector\ConstantReflector;
 use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use Roave\BetterReflection\Reflector\FunctionReflector;
+use Roave\BetterReflection\SourceLocator\Ast\Locator;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use Roave\BetterReflectionTest\BetterReflectionSingleton;
@@ -662,5 +666,270 @@ class PhpStormStubsSourceStubberTest extends TestCase
     {
         $reflection = $this->classReflector->reflect('XMLReader');
         $this->assertSame(realpath(__DIR__ . '/../../../../vendor/jetbrains/phpstorm-stubs/xmlreader/xmlreader.php'), realpath($reflection->getFileName()));
+    }
+
+    public function dataMethodSinceVersion() : array
+    {
+        return [
+            [
+                'ReflectionProperty',
+                'hasType',
+                70400,
+                true,
+            ],
+            [
+                'ReflectionProperty',
+                'hasType',
+                70300,
+                false,
+            ],
+            [
+                'ReflectionProperty',
+                'getType',
+                70400,
+                true,
+            ],
+            [
+                'ReflectionProperty',
+                'getType',
+                70300,
+                false,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider dataMethodSinceVersion
+     */
+    public function testMethodSinceVersion(
+        string $className,
+        string $methodName,
+        int $phpVersionId,
+        bool $expectedExists
+    ) : void {
+        [$classReflector] = $this->getReflectors($phpVersionId);
+        self::assertSame($expectedExists, $classReflector->reflect($className)->hasMethod($methodName));
+    }
+
+    public function dataPropertySinceVersion() : array
+    {
+        return [];
+    }
+
+    /**
+     * @dataProvider dataPropertySinceVersion
+     */
+    public function testPropertySinceVersion(
+        string $className,
+        string $propertyName,
+        int $phpVersionId,
+        bool $expectedExists
+    ) : void {
+        [$classReflector] = $this->getReflectors($phpVersionId);
+        self::assertSame($expectedExists, $classReflector->reflect($className)->hasProperty($propertyName));
+    }
+
+    public function dataClassConstantSinceVersion() : array
+    {
+        return [];
+    }
+
+    /**
+     * @dataProvider dataClassConstantSinceVersion
+     */
+    public function testClassConstantSinceVersion(
+        string $className,
+        string $constantName,
+        int $phpVersionId,
+        bool $expectedExists
+    ) : void {
+        [$classReflector] = $this->getReflectors($phpVersionId);
+        self::assertSame($expectedExists, $classReflector->reflect($className)->hasConstant($constantName));
+    }
+
+    public function dataClassSinceVersion() : array
+    {
+        return [
+            [
+                ReflectionNamedType::class,
+                70000,
+                false,
+            ],
+            [
+                ReflectionNamedType::class,
+                70100,
+                true,
+            ],
+            [
+                ReflectionNamedType::class,
+                70200,
+                true,
+            ],
+            [
+                'CompileError',
+                70300,
+                true,
+            ],
+            [
+                'CompileError',
+                70000,
+                true,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider dataClassSinceVersion
+     */
+    public function testClassSinceVersion(
+        string $className,
+        int $phpVersionId,
+        bool $expectedExists
+    ) : void {
+        [$classReflector] = $this->getReflectors($phpVersionId);
+
+        try {
+            $reflection = $classReflector->reflect($className);
+            if (! $expectedExists) {
+                $this->fail(sprintf('Class %s should not exist.', $className));
+            }
+
+            self::assertSame($className, $reflection->getName());
+        } catch (IdentifierNotFound $e) {
+            if ($expectedExists) {
+                $this->fail(sprintf('Class %s should exist.', $className));
+            }
+
+            self::assertSame($className, $e->getIdentifier()->getName());
+        }
+    }
+
+    public function dataFunctionSinceVersion() : array
+    {
+        return [
+            [
+                'password_algos',
+                70400,
+                true,
+            ],
+            [
+                'password_algos',
+                70300,
+                false,
+            ],
+            [
+                'setcookie',
+                70100,
+                true,
+            ],
+            [
+                'array_push',
+                70100,
+                true,
+            ],
+            [
+                'array_key_first',
+                70300,
+                true,
+            ],
+            [
+                'array_key_first',
+                70200,
+                false,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider dataFunctionSinceVersion
+     */
+    public function testFunctionSinceVersion(
+        string $functionName,
+        int $phpVersionId,
+        bool $expectedExists
+    ) : void {
+        [,$functionReflector] = $this->getReflectors($phpVersionId);
+
+        try {
+            $reflection = $functionReflector->reflect($functionName);
+            if (! $expectedExists) {
+                $this->fail(sprintf('Function %s should not exist.', $functionName));
+            }
+
+            self::assertSame($functionName, $reflection->getName());
+        } catch (IdentifierNotFound $e) {
+            if ($expectedExists) {
+                $this->fail(sprintf('Function %s should exist.', $functionName));
+            }
+
+            self::assertSame($functionName, $e->getIdentifier()->getName());
+        }
+    }
+
+    public function dataConstantSinceVersion() : array
+    {
+        return [
+            [
+                'PHP_OS_FAMILY',
+                70200,
+                true,
+            ],
+            [
+                'PHP_OS_FAMILY',
+                70100,
+                false,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider dataConstantSinceVersion
+     */
+    public function testConstantSinceVersion(
+        string $constantName,
+        int $phpVersionId,
+        bool $expectedExists
+    ) : void {
+        [,,$constantReflector] = $this->getReflectors($phpVersionId);
+
+        try {
+            $reflection = $constantReflector->reflect($constantName);
+            if (! $expectedExists) {
+                $this->fail(sprintf('Constant %s should not exist.', $constantName));
+            }
+
+            self::assertSame($constantName, $reflection->getName());
+        } catch (IdentifierNotFound $e) {
+            if ($expectedExists) {
+                $this->fail(sprintf('Constant %s should exist.', $constantName));
+            }
+
+            self::assertSame($constantName, $e->getIdentifier()->getName());
+        }
+    }
+
+    /**
+     * @return array{ClassReflector, FunctionReflector, ConstantReflector}
+     */
+    private function getReflectors(int $phpVersionId) : array
+    {
+        // memoizing parser screws things up so we need to create the universe from the start
+        $parser                   = (new ParserFactory())->create(ParserFactory::PREFER_PHP7, new Emulative([
+            'usedAttributes' => ['comments', 'startLine', 'endLine', 'startFilePos', 'endFilePos'],
+        ]));
+        $functionReflector        = null;
+        $astLocator               = new Locator($parser, static function () use (&$functionReflector) : FunctionReflector {
+            return $functionReflector;
+        });
+        $sourceStubber            = new PhpStormStubsSourceStubber($parser, $phpVersionId);
+        $phpInternalSourceLocator = new PhpInternalSourceLocator(
+            $astLocator,
+            $sourceStubber
+        );
+        $classReflector           = new ClassReflector($phpInternalSourceLocator);
+        $functionReflector        = new FunctionReflector($phpInternalSourceLocator, $classReflector);
+        $constantReflector        = new ConstantReflector($phpInternalSourceLocator, $classReflector);
+
+        return [$classReflector, $functionReflector, $constantReflector];
     }
 }
