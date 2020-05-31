@@ -109,6 +109,13 @@ final class PhpStormStubsSourceStubber implements SourceStubber
         $this->constantMap = PhpStormStubsMap::CONSTANTS;
     }
 
+    public function hasClass(string $className) : bool
+    {
+        $lowercaseClassName = strtolower($className);
+
+        return array_key_exists($lowercaseClassName, $this->classMap);
+    }
+
     public function generateClassStub(string $className) : ?StubData
     {
         $lowercaseClassName = strtolower($className);
