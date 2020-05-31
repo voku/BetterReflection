@@ -123,7 +123,7 @@ final class PhpStormStubsSourceStubber implements SourceStubber
             $stub = str_replace(' extends \iterable', '', $stub);
         }
 
-        return new StubData($stub, $this->getExtensionFromFilePath($filePath));
+        return new StubData($stub, $this->getExtensionFromFilePath($filePath), $this->getAbsoluteFilePath($filePath));
     }
 
     public function generateFunctionStub(string $functionName) : ?StubData

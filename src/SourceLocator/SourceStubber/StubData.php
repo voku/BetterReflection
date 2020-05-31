@@ -15,10 +15,14 @@ class StubData
     /** @var string|null */
     private $extensionName;
 
-    public function __construct(string $stub, ?string $extensionName)
+    /** @var string|null */
+    private $fileName;
+
+    public function __construct(string $stub, ?string $extensionName, ?string $fileName = null)
     {
         $this->stub          = $stub;
         $this->extensionName = $extensionName;
+        $this->fileName      = $fileName;
     }
 
     public function getStub() : string
@@ -29,5 +33,10 @@ class StubData
     public function getExtensionName() : ?string
     {
         return $this->extensionName;
+    }
+
+    public function getFileName() : ?string
+    {
+        return $this->fileName;
     }
 }

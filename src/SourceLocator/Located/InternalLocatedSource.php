@@ -12,9 +12,9 @@ class InternalLocatedSource extends LocatedSource
     /**
      * {@inheritDoc}
      */
-    public function __construct(string $source, string $extensionName)
+    public function __construct(string $source, string $extensionName, ?string $fileName = null)
     {
-        parent::__construct($source, null);
+        parent::__construct($source, $fileName);
 
         $this->extensionName = $extensionName;
     }
