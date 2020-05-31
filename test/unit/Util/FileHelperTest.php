@@ -26,4 +26,13 @@ class FileHelperTest extends TestCase
 
         self::assertSame(strtr($path, '\\/', DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR), FileHelper::normalizeSystemPath($path));
     }
+
+    public function testSystemWindowsPathWithProtocol() : void
+    {
+        $path = 'phar://C:/Users/ondrej/phpstan.phar/src/TrinaryLogic.php';
+        self::assertSame(
+            'phar://C:\Users\ondrej\phpstan.phar\src\TrinaryLogic.php',
+            FileHelper::normalizeSystemPath($path, '\\')
+        );
+    }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Roave\BetterReflection\Util;
 
+use function preg_match;
 use function str_replace;
 use const DIRECTORY_SEPARATOR;
 
@@ -14,12 +15,21 @@ class FileHelper
         return str_replace('\\', '/', $path);
     }
 
-    public static function normalizeSystemPath(string $path) : string
+    public static function normalizeSystemPath(string $originalPath, string $directorySeparator = DIRECTORY_SEPARATOR) : string
     {
-        $path = self::normalizeWindowsPath($path);
+        $originalPath = self::normalizeWindowsPath($originalPath);
+        preg_match('~^([a-z]+)\\:\\/\\/(.+)~', $originalPath, $matches);
+        if ($matches !== []) {
+            [, $scheme, $path] = $matches;
+        } else {
+            $scheme = null;
+            $path   = $originalPath;
+        }
 
-        return DIRECTORY_SEPARATOR === '\\'
-            ? str_replace('/', '\\', $path)
-            : $path;
+        return ($scheme !== null ? $scheme . '://' : '') . (
+            $directorySeparator === '\\'
+                ? str_replace('/', '\\', $path)
+                : $path
+        );
     }
 }
