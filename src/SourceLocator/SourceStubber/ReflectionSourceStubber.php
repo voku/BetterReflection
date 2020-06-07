@@ -47,6 +47,7 @@ use function function_exists;
 use function get_defined_constants;
 use function in_array;
 use function interface_exists;
+use function method_exists;
 use function trait_exists;
 
 /**
@@ -275,6 +276,15 @@ final class ReflectionSourceStubber implements SourceStubber
                     $propertyNode->setDefault($defaultProperties[$propertyReflection->getName()]);
                 } catch (LogicException $e) {
                     // Unsupported value
+                }
+            }
+
+            if (method_exists($propertyReflection, 'getType')) {
+                $propertyType = $propertyReflection->getType();
+                assert($propertyType instanceof CoreReflectionNamedType || $propertyType === null);
+
+                if ($propertyType !== null) {
+                    $propertyNode->setType($this->formatType($propertyType));
                 }
             }
 
