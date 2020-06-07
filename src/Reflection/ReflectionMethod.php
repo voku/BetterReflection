@@ -113,7 +113,7 @@ class ReflectionMethod extends ReflectionFunctionAbstract
      */
     public function getPrototype() : self
     {
-        $currentClass = $this->getDeclaringClass();
+        $currentClass = $this->getImplementingClass();
 
         while ($currentClass) {
             foreach ($currentClass->getImmediateInterfaces() as $interface) {
