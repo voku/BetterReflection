@@ -12,18 +12,25 @@ use function is_string;
 /**
  * @internal
  */
-final class GetFirstDocComment
+final class GetLastDocComment
 {
     public static function forNode(NodeAbstract $node) : string
     {
+        $doc = null;
         foreach ($node->getComments() as $comment) {
-            if ($comment instanceof Doc) {
-                $text = $comment->getReformattedText();
-
-                assert(is_string($text));
-
-                return $text;
+            if (! $comment instanceof Doc) {
+                continue;
             }
+
+            $doc = $comment;
+        }
+
+        if ($doc !== null) {
+            $text = $doc->getReformattedText();
+
+            assert(is_string($text));
+
+            return $text;
         }
 
         return '';
