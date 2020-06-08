@@ -354,7 +354,13 @@ class ReflectionClass implements Reflection
             $methodName = strtolower($method->getName());
 
             if (isset($cachedMethods[$methodName])) {
-                continue;
+                $existingMethod = $cachedMethods[$methodName];
+                if (! $existingMethod->getDeclaringClass()->isTrait()
+                    || ! $existingMethod->isAbstract()
+                    || $method->isAbstract()
+                ) {
+                    continue;
+                }
             }
 
             $cachedMethods[$methodName] = $method;
