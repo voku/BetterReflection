@@ -17,6 +17,7 @@ use function defined;
 use function dirname;
 use function realpath;
 use function reset;
+use function sprintf;
 
 class CompileNodeToValue
 {
@@ -50,6 +51,53 @@ class CompileNodeToValue
 
             if ($node instanceof Node\Scalar\MagicConst\Class_) {
                 return $this->compileClassConstant($context);
+            }
+
+            if ($node instanceof Node\Scalar\MagicConst\File) {
+                return $context->getFileName();
+            }
+
+            if ($node instanceof Node\Scalar\MagicConst\Line) {
+                return $node->getLine();
+            }
+
+            if ($node instanceof Node\Scalar\MagicConst\Namespace_) {
+                return $context->getNamespace() ?? '';
+            }
+
+            if ($node instanceof Node\Scalar\MagicConst\Method) {
+                if ($context->hasSelf()) {
+                    if ($context->getFunctionName() !== null) {
+                        return sprintf('%s::%s', $context->getSelf()->getName(), $context->getFunctionName());
+                    }
+
+                    return '';
+                }
+
+                if ($context->getFunctionName() !== null) {
+                    return $context->getFunctionName();
+                }
+
+                return '';
+            }
+
+            if ($node instanceof Node\Scalar\MagicConst\Function_) {
+                if ($context->getFunctionName() !== null) {
+                    return $context->getFunctionName();
+                }
+
+                return '';
+            }
+
+            if ($node instanceof Node\Scalar\MagicConst\Trait_) {
+                if ($context->hasSelf()) {
+                    $class = $context->getSelf();
+                    if ($class->isTrait()) {
+                        return $class->getName();
+                    }
+                }
+
+                return '';
             }
 
             throw Exception\UnableToCompileNode::forUnRecognizedExpressionInContext($node, $context);
@@ -128,7 +176,7 @@ class CompileNodeToValue
 
         return $this->__invoke(
             $reflectionConstant->getAst()->consts[$reflectionConstant->getPositionInAst()]->value,
-            new CompilerContext($context->getReflector(), $classInfo)
+            new CompilerContext($context->getReflector(), $classInfo, $context->getNamespace(), $context->getFunctionName())
         );
     }
 

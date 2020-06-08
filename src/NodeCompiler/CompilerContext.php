@@ -16,10 +16,18 @@ class CompilerContext
     /** @var ReflectionClass|null */
     private $self;
 
-    public function __construct(Reflector $reflector, ?ReflectionClass $self)
+    /** @var string|null */
+    private $namespace;
+
+    /** @var string|null */
+    private $functionName;
+
+    public function __construct(Reflector $reflector, ?ReflectionClass $self, ?string $namespace, ?string $functionName)
     {
-        $this->reflector = $reflector;
-        $this->self      = $self;
+        $this->reflector    = $reflector;
+        $this->self         = $self;
+        $this->namespace    = $namespace;
+        $this->functionName = $functionName;
     }
 
     /**
@@ -49,5 +57,15 @@ class CompilerContext
     public function getFileName() : string
     {
         return $this->getSelf()->getFileName();
+    }
+
+    public function getNamespace() : ?string
+    {
+        return $this->namespace;
+    }
+
+    public function getFunctionName() : ?string
+    {
+        return $this->functionName;
     }
 }

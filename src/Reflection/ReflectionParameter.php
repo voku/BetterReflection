@@ -198,9 +198,14 @@ class ReflectionParameter
             return;
         }
 
+        $namespace = null;
+        if ($this->declaringNamespace !== null && $this->declaringNamespace->name !== null) {
+            $namespace = (string) $this->declaringNamespace->name;
+        }
+
         $this->defaultValue = (new CompileNodeToValue())->__invoke(
             $defaultValueNode,
-            new CompilerContext($this->reflector, $this->getDeclaringClass())
+            new CompilerContext($this->reflector, $this->getDeclaringClass(), $namespace, $this->function->getName())
         );
     }
 

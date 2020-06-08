@@ -232,10 +232,15 @@ class ReflectionConstant implements Reflection
             ? $this->node->args[1]->value
             : $this->node->consts[$this->positionInNode]->value;
 
+        $namespace = null;
+        if ($this->declaringNamespace !== null && $this->declaringNamespace->name !== null) {
+            $namespace = (string) $this->declaringNamespace->name;
+        }
+
         /** @psalm-suppress UndefinedPropertyFetch */
         $this->value          = (new CompileNodeToValue())->__invoke(
             $valueNode,
-            new CompilerContext($this->reflector, null)
+            new CompilerContext($this->reflector, null, $namespace, null)
         );
         $this->valueWasCached = true;
 
