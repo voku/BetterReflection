@@ -58,8 +58,8 @@ class CompileNodeToValueTest extends TestCase
         return new CompilerContext(
             new ClassReflector(new StringSourceLocator('<?php class EmptyClass {}', $this->astLocator)),
             null,
-			null,
-			null
+            null,
+            null
         );
     }
 
