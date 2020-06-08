@@ -331,6 +331,10 @@ abstract class ReflectionFunctionAbstract
             return true;
         }
 
+        if ($node instanceof Node\Expr\YieldFrom) {
+            return true;
+        }
+
         foreach ($node->getSubNodeNames() as $nodeName) {
             $nodeProperty = $node->$nodeName;
 
