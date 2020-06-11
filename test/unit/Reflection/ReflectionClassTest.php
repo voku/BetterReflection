@@ -7,7 +7,6 @@ namespace Roave\BetterReflectionTest\Reflection;
 use Bar;
 use Baz;
 use E;
-use InvalidArgumentException;
 use Iterator;
 use OutOfBoundsException;
 use Php4StyleCaseInsensitiveConstruct;
@@ -47,7 +46,10 @@ use Roave\BetterReflectionTest\ClassWithInterfacesExtendingInterfaces;
 use Roave\BetterReflectionTest\ClassWithInterfacesOther;
 use Roave\BetterReflectionTest\Fixture;
 use Roave\BetterReflectionTest\Fixture\AbstractClass;
+use Roave\BetterReflectionTest\Fixture\ClassExtendingNonAbstractClass;
 use Roave\BetterReflectionTest\Fixture\ClassForHinting;
+use Roave\BetterReflectionTest\Fixture\ClassUsesTwoTraitsWithSameMethodNameOneIsAbstract;
+use Roave\BetterReflectionTest\Fixture\ClassUsingTraitWithAbstractMethod;
 use Roave\BetterReflectionTest\Fixture\ClassWithCaseInsensitiveMethods;
 use Roave\BetterReflectionTest\Fixture\ClassWithMissingParent;
 use Roave\BetterReflectionTest\Fixture\ExampleClass;
@@ -101,13 +103,6 @@ class ReflectionClassTest extends TestCase
     {
         $instance = new stdClass();
         self::assertSame(stdClass::class, ReflectionClass::createFromInstance($instance)->getName());
-    }
-
-    public function testCreateFromInstanceThrowsExceptionWhenInvalidArgumentProvided() : void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Instance must be an instance of an object');
-        ReflectionClass::createFromInstance('invalid argument');
     }
 
     public function testCanReflectEvaledClassWithDefaultLocator() : void
@@ -182,7 +177,7 @@ class ReflectionClassTest extends TestCase
             [CoreReflectionMethod::IS_STATIC, 1],
             [CoreReflectionMethod::IS_ABSTRACT, 1],
             [CoreReflectionMethod::IS_FINAL, 1],
-            [CoreReflectionMethod::IS_PUBLIC, 16],
+            [CoreReflectionMethod::IS_PUBLIC, 17],
             [CoreReflectionMethod::IS_PROTECTED, 1],
             [CoreReflectionMethod::IS_PRIVATE, 1],
             [
@@ -192,7 +187,7 @@ class ReflectionClassTest extends TestCase
                 CoreReflectionMethod::IS_PUBLIC |
                 CoreReflectionMethod::IS_PROTECTED |
                 CoreReflectionMethod::IS_PRIVATE,
-                18,
+                19,
             ],
         ];
     }
@@ -279,10 +274,16 @@ class ReflectionClassTest extends TestCase
         }, $classInfo->getMethods());
 
         $expectedMethodNames = [
-            'first',
-            'second',
-            'third',
-            'forth',
+            'f1',
+            'f2',
+            'f3',
+            'f4',
+            'f5',
+            'f6',
+            'f7',
+            'f8',
+            'f9',
+            'f10',
         ];
 
         self::assertSame($expectedMethodNames, $actualMethodNames);
@@ -632,10 +633,10 @@ PHP;
         $reflector = new ClassReflector($this->getComposerLocator());
         $classInfo = $reflector->reflect(ExampleClass::class);
 
-        self::assertStringContainsString('Some comments here', $classInfo->getDocComment());
+        self::assertStringContainsString('This class comment should be used.', $classInfo->getDocComment());
     }
 
-    public function testGetDocCommentBetweeenComments() : void
+    public function testGetDocCommentBetweenComments() : void
     {
         $php       = '<?php
             /* A comment */
@@ -936,6 +937,60 @@ PHP;
         self::assertSame('TraitFixtureTraitA', $classInfo->getMethod('foo')->getDeclaringClass()->getName());
     }
 
+    public function declaringClassProvider() : array
+    {
+        return [
+            [
+                ClassUsingTraitWithAbstractMethod::class,
+                'foo',
+                'AbstractClassImplementingMethodFromTrait',
+                'AbstractClassImplementingMethodFromTrait',
+            ],
+            [
+                ClassUsingTraitWithAbstractMethod::class,
+                'bar',
+                'TraitWithAbstractMethod',
+                'ClassUsingTraitWithAbstractMethod',
+            ],
+            [
+                ClassExtendingNonAbstractClass::class,
+                'boo',
+                'TraitWithBoo',
+                'ClassExtendingNonAbstractClass',
+            ],
+            [
+                ClassUsesTwoTraitsWithSameMethodNameOneIsAbstract::class,
+                'bar',
+                'ImplementationTrait',
+                'ClassUsesTwoTraitsWithSameMethodNameOneIsAbstract',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider declaringClassProvider
+     */
+    public function testGetDeclaringClassWithTraitAndParent(
+        string $className,
+        string $methodName,
+        string $declaringClassShortName,
+        string $implementingClassShortName
+    ) : void {
+        $reflector = new ClassReflector(new SingleFileSourceLocator(
+            __DIR__ . '/../Fixture/TraitWithAbstractMethod.php',
+            $this->astLocator
+        ));
+
+        $classInfo = $reflector->reflect($className);
+
+        self::assertTrue($classInfo->hasMethod($methodName));
+
+        $fooMethodInfo = $classInfo->getMethod($methodName);
+
+        self::assertSame($declaringClassShortName, $fooMethodInfo->getDeclaringClass()->getShortName());
+        self::assertSame($implementingClassShortName, $fooMethodInfo->getImplementingClass()->getShortName());
+    }
+
     public function testGetTraitsReturnsEmptyArrayWhenNoTraitsUsed() : void
     {
         $reflector = new ClassReflector(new SingleFileSourceLocator(
@@ -974,6 +1029,7 @@ PHP;
         self::assertSame([
             'a_protected' => 'TraitFixtureTraitC::a',
             'b_renamed' => 'TraitFixtureTraitC::b',
+            'd_renamed' => 'TraitFixtureTraitC3::d',
         ], $classInfo->getTraitAliases());
     }
 
@@ -986,14 +1042,14 @@ PHP;
 
         $classInfo = $reflector->reflect('TraitFixtureC');
 
-        self::assertFalse($classInfo->hasMethod('a'));
+        self::assertTrue($classInfo->hasMethod('a'));
         self::assertTrue($classInfo->hasMethod('a_protected'));
 
         $aProtected = $classInfo->getMethod('a_protected');
 
         self::assertSame('TraitFixtureTraitC', $aProtected->getDeclaringClass()->getName());
 
-        self::assertFalse($classInfo->hasMethod('b'));
+        self::assertTrue($classInfo->hasMethod('b'));
         self::assertTrue($classInfo->hasMethod('b_renamed'));
 
         $bRenamed = $classInfo->getMethod('b_renamed');
@@ -1006,6 +1062,12 @@ PHP;
 
         self::assertSame('c', $c->getName());
         self::assertSame('TraitFixtureTraitC', $c->getDeclaringClass()->getName());
+
+        self::assertTrue($classInfo->hasMethod('d'));
+        self::assertTrue($classInfo->hasMethod('d_renamed'));
+
+        self::assertSame('TraitFixtureTraitC2', $classInfo->getMethod('d')->getDeclaringClass()->getName());
+        self::assertSame('TraitFixtureTraitC2', $classInfo->getMethod('d_renamed')->getDeclaringClass()->getName());
     }
 
     public function testMethodsFromTraitsWithConflicts() : void
@@ -1028,7 +1090,7 @@ PHP;
         self::assertSame('TraitFixtureTraitD1', $foo->getDeclaringClass()->getName());
         self::assertSame('TraitFixtureD', $foo->getImplementingClass()->getName());
 
-        self::assertFalse($classInfo->hasMethod('hoo'));
+        self::assertTrue($classInfo->hasMethod('hoo'));
         self::assertTrue($classInfo->hasMethod('hooFirstAlias'));
         self::assertTrue($classInfo->hasMethod('hooSecondAlias'));
 
@@ -1120,8 +1182,8 @@ PHP;
             $this->astLocator
         ));
         $interfaces = $reflector
-                ->reflect(ClassWithInterfaces\ExampleClass::class)
-                ->getInterfaces();
+            ->reflect(ClassWithInterfaces\ExampleClass::class)
+            ->getInterfaces();
 
         $expectedInterfaces = [
             ClassWithInterfaces\A::class,
@@ -1474,8 +1536,8 @@ PHP;
         $interfaces = $reflector->reflect('Boom\B')->getImmediateInterfaces();
 
         self::assertCount(1, $interfaces);
-        self::assertInstanceOf(ReflectionClass::class, $interfaces['Boom\Bar']);
-        self::assertSame('Boom\Bar', $interfaces['Boom\Bar']->getName());
+        self::assertInstanceOf(ReflectionClass::class, $interfaces['Boom\Boo']);
+        self::assertSame('Boom\Boo', $interfaces['Boom\Boo']->getName());
     }
 
     public function testGetImmediateInterfacesDoesNotIncludeCurrentInterface() : void
@@ -1502,7 +1564,7 @@ PHP;
         sort($dInterfaces);
 
         self::assertSame(['B'], $cInterfaces);
-        self::assertSame(['A', 'B', 'C'], $dInterfaces);
+        self::assertSame(['A', 'C'], $dInterfaces);
     }
 
     public function testReflectedTraitHasNoInterfaces() : void

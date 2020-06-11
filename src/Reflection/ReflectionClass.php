@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Roave\BetterReflection\Reflection;
 
-use InvalidArgumentException;
 use OutOfBoundsException;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_ as ClassNode;
@@ -126,16 +125,9 @@ class ReflectionClass implements Reflection
      *
      * @throws IdentifierNotFound
      * @throws ReflectionException
-     * @throws InvalidArgumentException
-     *
-     * @psalm-suppress DocblockTypeContradiction
      */
     public static function createFromInstance($instance) : self
     {
-        if (! is_object($instance)) {
-            throw new InvalidArgumentException('Instance must be an instance of an object');
-        }
-
         return ReflectionObject::createFromInstance($instance);
     }
 
@@ -155,13 +147,10 @@ class ReflectionClass implements Reflection
     ) : self {
         $class = new self();
 
-        $class->reflector     = $reflector;
-        $class->locatedSource = $locatedSource;
-        $class->node          = $node;
-
-        if ($namespace !== null) {
-            $class->declaringNamespace = $namespace;
-        }
+        $class->reflector          = $reflector;
+        $class->locatedSource      = $locatedSource;
+        $class->node               = $node;
+        $class->declaringNamespace = $namespace;
 
         return $class;
     }
@@ -237,27 +226,67 @@ class ReflectionClass implements Reflection
     }
 
     /**
-     * Construct a flat list of all methods from current class, traits,
-     * parent classes and interfaces in this precise order.
-     *
      * @return ReflectionMethod[]
      */
-    private function getAllMethods() : array
+    private function createMethodsFromTrait(ReflectionMethod $method) : array
+    {
+        $traitAliases     = $this->getTraitAliases();
+        $traitPrecedences = $this->getTraitPrecedences();
+
+        $methodAst = $method->getAst();
+        assert($methodAst instanceof ClassMethod);
+
+        $methodHash   = $this->methodHash($method->getImplementingClass()->getName(), $method->getName());
+        $createMethod = function (?string $aliasMethodName) use ($method, $methodAst) : ReflectionMethod {
+            return ReflectionMethod::createFromNode(
+                $this->reflector,
+                $methodAst,
+                $method->getDeclaringClass()->getDeclaringNamespaceAst(),
+                $method->getDeclaringClass(),
+                $this,
+                $aliasMethodName
+            );
+        };
+
+        $methods = [];
+        foreach ($traitAliases as $aliasMethodName => $traitAliasDefinition) {
+            if ($methodHash !== $traitAliasDefinition) {
+                continue;
+            }
+
+            $methods[] = $createMethod($aliasMethodName);
+        }
+
+        if (! array_key_exists($methodHash, $traitPrecedences)) {
+            $methods[] = $createMethod($method->getAliasName());
+        }
+
+        return $methods;
+    }
+
+    /**
+     * @return list<ReflectionMethod>
+     */
+    private function getParentMethods() : array
     {
         return array_merge(
             [],
-            array_map(
-                function (ClassMethod $methodNode) : ReflectionMethod {
-                    return ReflectionMethod::createFromNode(
-                        $this->reflector,
-                        $methodNode,
-                        $this->declaringNamespace,
-                        $this,
-                        $this
-                    );
+            ...array_map(
+                static function (ReflectionClass $ancestor) : array {
+                    return $ancestor->getMethods();
                 },
-                $this->node->getMethods()
-            ),
+                array_filter([$this->getParentClass()])
+            )
+        );
+    }
+
+    /**
+     * @return list<ReflectionMethod>
+     */
+    private function getMethodsFromTraits() : array
+    {
+        return array_merge(
+            [],
             ...array_map(
                 function (ReflectionClass $trait) : array {
                     return array_merge(
@@ -271,71 +300,34 @@ class ReflectionClass implements Reflection
                     );
                 },
                 $this->getTraits()
-            ),
-            ...array_map(
-                static function (ReflectionClass $ancestor) : array {
-                    return $ancestor->getMethods();
-                },
-                array_values(array_merge(
-                    array_filter([$this->getParentClass()]),
-                    $this->getInterfaces()
-                ))
             )
         );
     }
 
     /**
-     * @return ReflectionMethod[]
+     * @return list<ReflectionMethod>
      */
-    private function createMethodsFromTrait(ReflectionMethod $method) : array
+    private function getMethodsFromInterfaces() : array
     {
-        $traitAliases     = $this->getTraitAliases();
-        $traitPrecedences = $this->getTraitPrecedences();
-
-        $methodAst = $method->getAst();
-        assert($methodAst instanceof ClassMethod);
-
-        $methodHash = $this->methodHash($method->getDeclaringClass()->getName(), $method->getName());
-
-        $aliases = [];
-        foreach ($traitAliases as $aliasMethodName => $traitAliasDefinition) {
-            if ($methodHash !== $traitAliasDefinition) {
-                continue;
-            }
-
-            $aliases[] = ReflectionMethod::createFromNode(
-                $this->reflector,
-                $methodAst,
-                $method->getDeclaringClass()->getDeclaringNamespaceAst(),
-                $method->getDeclaringClass(),
-                $this,
-                $aliasMethodName
-            );
-        }
-
-        if ($aliases !== []) {
-            return $aliases;
-        }
-
-        if (array_key_exists($methodHash, $traitPrecedences)) {
-            return [];
-        }
-
-        $newMethod = ReflectionMethod::createFromNode(
-            $this->reflector,
-            $methodAst,
-            $method->getDeclaringClass()->getDeclaringNamespaceAst(),
-            $method->getDeclaringClass(),
-            $this,
-            $method->getAliasName()
+        return array_merge(
+            [],
+            ...array_map(
+                static function (ReflectionClass $ancestor) : array {
+                    return $ancestor->getMethods();
+                },
+                array_values($this->getInterfaces())
+            )
         );
-
-        return [$newMethod];
     }
 
     /**
-     * Construct a flat list of methods that are available. This will search up
-     * all parent classes/traits/interfaces/current scope for methods.
+     * Construct a flat list of all methods in this precise order from:
+     *  - current class
+     *  - parent class
+     *  - traits used in parent class
+     *  - interfaces implemented in parent class
+     *  - traits used in current class
+     *  - interfaces implemented in current class
      *
      * Methods are not merged via their name as array index, since internal PHP method
      * sorting does not follow `\array_merge()` semantics.
@@ -348,25 +340,51 @@ class ReflectionClass implements Reflection
             return $this->cachedMethods;
         }
 
-        $cachedMethods = [];
+        $classMethods     = $this->getImmediateMethods();
+        $parentClass      = $this->getParentClass();
+        $parentClassName  = $parentClass !== null ? $parentClass->getName() : null;
+        $parentMethods    = $this->getParentMethods();
+        $traitsMethods    = $this->getMethodsFromTraits();
+        $interfaceMethods = $this->getMethodsFromInterfaces();
 
-        foreach ($this->getAllMethods() as $method) {
-            $methodName = strtolower($method->getName());
+        $methods = [];
 
-            if (isset($cachedMethods[$methodName])) {
-                $existingMethod = $cachedMethods[$methodName];
-                if (! $existingMethod->getDeclaringClass()->isTrait()
-                    || ! $existingMethod->isAbstract()
-                    || $method->isAbstract()
-                ) {
+        foreach ([$classMethods, $parentMethods, 'traits' => $traitsMethods, $interfaceMethods] as $type => $typeMethods) {
+            foreach ($typeMethods as $method) {
+                $methodName = strtolower($method->getName());
+
+                if (! array_key_exists($methodName, $methods)) {
+                    $methods[$methodName] = $method;
                     continue;
                 }
-            }
 
-            $cachedMethods[$methodName] = $method;
+                if ($type !== 'traits') {
+                    continue;
+                }
+
+                $existingMethod = $methods[$methodName];
+
+                // Non-abstract trait method can overwrite existing methods:
+                // - when existing method comes from parent class
+                // - when existing method comes from trait and is abstract
+                if (! (
+                    ! $method->isAbstract()
+                    && (
+                        $existingMethod->getDeclaringClass()->getName() === $parentClassName
+                        || (
+                            $existingMethod->isAbstract()
+                            && $existingMethod->getDeclaringClass()->isTrait()
+                        )
+                    )
+                )) {
+                    continue;
+                }
+
+                $methods[$methodName] = $method;
+            }
         }
 
-        $this->cachedMethods = $cachedMethods;
+        $this->cachedMethods = $methods;
 
         return $this->cachedMethods;
     }
@@ -842,16 +860,15 @@ class ReflectionClass implements Reflection
             $parent = $this->reflector->reflect($this->node->extends->toString());
             // @TODO use actual `ClassReflector` or `FunctionReflector`?
             assert($parent instanceof self);
+
             $this->cachedParentClass = $parent;
-        } else {
-            $parent = $this->cachedParentClass;
         }
 
-        if ($parent->isInterface() || $parent->isTrait()) {
-            throw NotAClassReflection::fromReflectionClass($parent);
+        if ($this->cachedParentClass->isInterface() || $this->cachedParentClass->isTrait()) {
+            throw NotAClassReflection::fromReflectionClass($this->cachedParentClass);
         }
 
-        return $parent;
+        return $this->cachedParentClass;
     }
 
     /**
@@ -1131,7 +1148,28 @@ class ReflectionClass implements Reflection
      */
     public function getImmediateInterfaces() : array
     {
-        return $this->getCurrentClassImplementedInterfacesIndexedByName();
+        if ($this->isTrait()) {
+            return [];
+        }
+
+        assert($this->node instanceof ClassNode || $this->node instanceof InterfaceNode);
+
+        $nodes = $this->node instanceof InterfaceNode ? $this->node->extends : $this->node->implements;
+
+        return array_combine(
+            array_map(
+                static function (Node\Name $interfaceName) : string {
+                    return $interfaceName->toString();
+                },
+                $nodes
+            ),
+            array_map(
+                function (Node\Name $interfaceName) : ReflectionClass {
+                    return $this->reflectClassForNamedNode($interfaceName);
+                },
+                $nodes
+            )
+        );
     }
 
     /**
@@ -1157,10 +1195,6 @@ class ReflectionClass implements Reflection
      * @link https://php.net/manual/en/reflectionclass.isinstance.php
      *
      * @param object $object
-     *
-     * @throws NotAnObject
-     *
-     * @psalm-suppress DocblockTypeContradiction
      */
     public function isInstance($object) : bool
     {
