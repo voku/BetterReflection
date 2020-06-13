@@ -319,6 +319,9 @@ class ReflectionMethodTest extends TestCase
             ['Foom\A', 'foo', 'Foom\Foo'],
             ['ClassE', 'boo', 'ClassC'],
             ['ClassF', 'zoo', 'ClassD'],
+            ['Construct\Bar', '__construct', null],
+            ['Construct\Ipsum', '__construct', 'Construct\Lorem'],
+            ['Traits\Foo', 'doFoo', 'Traits\FooInterface'],
         ];
     }
 

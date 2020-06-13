@@ -131,6 +131,10 @@ class ReflectionMethod extends ReflectionFunctionAbstract
             $prototype = $currentClass->getMethod($this->getName())->findPrototype();
 
             if ($prototype !== null) {
+                if ($this->isConstructor() && ! $prototype->isAbstract()) {
+                    break;
+                }
+
                 return $prototype;
             }
         }
