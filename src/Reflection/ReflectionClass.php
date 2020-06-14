@@ -341,8 +341,6 @@ class ReflectionClass implements Reflection
         }
 
         $classMethods     = $this->getImmediateMethods();
-        $parentClass      = $this->getParentClass();
-        $parentClassName  = $parentClass !== null ? $parentClass->getName() : null;
         $parentMethods    = $this->getParentMethods();
         $traitsMethods    = $this->getMethodsFromTraits();
         $interfaceMethods = $this->getMethodsFromInterfaces();
@@ -370,7 +368,7 @@ class ReflectionClass implements Reflection
                 if (! (
                     ! $method->isAbstract()
                     && (
-                        $existingMethod->getDeclaringClass()->getName() === $parentClassName
+                        $existingMethod->getDeclaringClass()->getName() !== $this->getName()
                         || (
                             $existingMethod->isAbstract()
                             && $existingMethod->getDeclaringClass()->isTrait()
