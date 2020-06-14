@@ -33,7 +33,7 @@ class CompilerContextTest extends TestCase
     public function testCreatingContextWithoutSelf() : void
     {
         $reflector = new ClassReflector(new StringSourceLocator('<?php', $this->astLocator));
-        $context   = new CompilerContext($reflector, null, null, null);
+        $context   = new CompilerContext($reflector, null, null, null, null);
 
         self::assertFalse($context->hasSelf());
         self::assertSame($reflector, $context->getReflector());
@@ -48,7 +48,7 @@ class CompilerContextTest extends TestCase
         $reflector = new ClassReflector(new StringSourceLocator('<?php class Foo {}', $this->astLocator));
         $self      = $reflector->reflect('Foo');
 
-        $context = new CompilerContext($reflector, $self, null, null);
+        $context = new CompilerContext($reflector, null, $self, null, null);
 
         self::assertTrue($context->hasSelf());
         self::assertSame($reflector, $context->getReflector());
@@ -62,7 +62,7 @@ class CompilerContextTest extends TestCase
         $reflector = new ClassReflector(new SingleFileSourceLocator($filename, $this->astLocator));
         $self      = $reflector->reflect(self::class);
 
-        $context = new CompilerContext($reflector, $self, null, null);
+        $context = new CompilerContext($reflector, $filename, $self, null, null);
 
         self::assertSame($filename, $context->getFileName());
     }
@@ -72,10 +72,10 @@ class CompilerContextTest extends TestCase
         $filename = __DIR__ . '/CompilerContextTest.php';
 
         $reflector = new ClassReflector(new SingleFileSourceLocator($filename, $this->astLocator));
-        $context   = new CompilerContext($reflector, null, null, null);
+        $context   = new CompilerContext($reflector, null, null, null, null);
 
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('The current context does not have a class for self');
+        $this->expectExceptionMessage('The current context does not have a filename');
         $context->getFileName();
     }
 

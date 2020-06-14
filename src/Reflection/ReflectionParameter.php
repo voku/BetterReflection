@@ -205,7 +205,7 @@ class ReflectionParameter
 
         $this->defaultValue = (new CompileNodeToValue())->__invoke(
             $defaultValueNode,
-            new CompilerContext($this->reflector, $this->getDeclaringClass(), $namespace, $this->function->getName())
+            new CompilerContext($this->reflector, $this->function->getFileName(), $this->getDeclaringClass(), $namespace, $this->function->getName())
         );
     }
 

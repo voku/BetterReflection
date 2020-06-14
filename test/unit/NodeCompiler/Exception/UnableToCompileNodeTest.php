@@ -106,8 +106,8 @@ final class UnableToCompileNodeTest extends TestCase
         ));
 
         return [
-            [new CompilerContext($reflector, null, null, null)],
-            [new CompilerContext($reflector, $reflector->reflect('EmptyClass'), null, null)],
+            [new CompilerContext($reflector, null, null, null, null)],
+            [new CompilerContext($reflector, null, $reflector->reflect('EmptyClass'), null, null)],
         ];
     }
 }

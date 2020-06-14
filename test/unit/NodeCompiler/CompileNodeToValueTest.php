@@ -50,13 +50,14 @@ class CompileNodeToValueTest extends TestCase
 
     private function getDummyContext() : CompilerContext
     {
-        return new CompilerContext(new ClassReflector(new StringSourceLocator('<?php', $this->astLocator)), null, null, null);
+        return new CompilerContext(new ClassReflector(new StringSourceLocator('<?php', $this->astLocator)), null, null, null, null);
     }
 
     private function getDummyContextWithEmptyClass() : CompilerContext
     {
         return new CompilerContext(
             new ClassReflector(new StringSourceLocator('<?php class EmptyClass {}', $this->astLocator)),
+            null,
             null,
             null,
             null

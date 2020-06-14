@@ -13,6 +13,9 @@ class CompilerContext
     /** @var Reflector */
     private $reflector;
 
+    /** @var string|null */
+    private $fileName;
+
     /** @var ReflectionClass|null */
     private $self;
 
@@ -22,9 +25,10 @@ class CompilerContext
     /** @var string|null */
     private $functionName;
 
-    public function __construct(Reflector $reflector, ?ReflectionClass $self, ?string $namespace, ?string $functionName)
+    public function __construct(Reflector $reflector, ?string $fileName, ?ReflectionClass $self, ?string $namespace, ?string $functionName)
     {
         $this->reflector    = $reflector;
+        $this->fileName     = $fileName;
         $this->self         = $self;
         $this->namespace    = $namespace;
         $this->functionName = $functionName;
@@ -54,9 +58,18 @@ class CompilerContext
         return $this->reflector;
     }
 
+    public function hasFileName() : bool
+    {
+        return $this->fileName !== null;
+    }
+
     public function getFileName() : string
     {
-        return $this->getSelf()->getFileName();
+        if (! $this->hasFileName()) {
+            throw new RuntimeException('The current context does not have a filename');
+        }
+
+        return $this->fileName;
     }
 
     public function getNamespace() : ?string
