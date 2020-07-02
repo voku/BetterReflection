@@ -498,4 +498,15 @@ class ReflectionClassTest extends TestCase
 
         self::assertNull($reflectionClassAdapter->isInstance('string'));
     }
+
+    public function testPropertyName() : void
+    {
+        $betterReflectionClass = $this->createMock(BetterReflectionClass::class);
+        $betterReflectionClass
+            ->method('getName')
+            ->will($this->returnValue('Foo'));
+
+        $reflectionClassAdapter = new ReflectionClassAdapter($betterReflectionClass);
+        self::assertSame('Foo', $reflectionClassAdapter->name);
+    }
 }
