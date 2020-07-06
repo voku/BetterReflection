@@ -61,6 +61,9 @@ class PhpStormStubsSourceStubberTest extends TestCase
     protected function setUp() : void
     {
         parent::setUp();
+        if (PHP_VERSION_ID >= 80000) {
+            self::markTestSkipped('Was not yet modified for PHP 8.0');
+        }
 
         $betterReflection = BetterReflectionSingleton::instance();
 
