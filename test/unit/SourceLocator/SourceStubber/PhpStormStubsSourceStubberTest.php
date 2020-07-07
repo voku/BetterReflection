@@ -17,6 +17,7 @@ use Roave\BetterReflection\Reflection\ReflectionClass;
 use Roave\BetterReflection\Reflection\ReflectionConstant;
 use Roave\BetterReflection\Reflection\ReflectionMethod;
 use Roave\BetterReflection\Reflection\ReflectionParameter;
+use Roave\BetterReflection\Reflection\ReflectionType;
 use Roave\BetterReflection\Reflector\ClassReflector;
 use Roave\BetterReflection\Reflector\ConstantReflector;
 use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
@@ -232,6 +233,7 @@ class PhpStormStubsSourceStubberTest extends TestCase
         self::assertSame($original->returnsReference(), $stubbed->returnsReference());
         self::assertSame($original->isStatic(), $stubbed->isStatic());
         self::assertSame($original->isFinal(), $stubbed->isFinal());
+        $this->assertType($original->getReturnType(), $stubbed->getReturnType(), sprintf('Return type of %s::%s()', $original->getDeclaringClass()->getName(), $original->getName()));
     }
 
     private function assertSameParameterAttributes(
@@ -287,6 +289,8 @@ class PhpStormStubsSourceStubberTest extends TestCase
                 self::assertNull($stubbed->getClass(), $parameterName);
             }
         }
+
+        $this->assertType($original->getType(), $stubbed->getType(), $parameterName);
     }
 
     /**
@@ -403,18 +407,29 @@ class PhpStormStubsSourceStubberTest extends TestCase
 
             self::assertSame($originalReflectionParameter->isVariadic(), $stubbedReflectionParameter->isVariadic(), $parameterName);
 
-            $type = $originalReflectionParameter->getType();
-            if ($type instanceof ReflectionNamedType) {
-                $stubbedType = $stubbedReflectionParameter->getType();
-                self::assertInstanceOf(\Roave\BetterReflection\Reflection\ReflectionNamedType::class, $stubbedType);
-                self::assertSame($type->getName(), $stubbedType->getName(), $parameterName);
-            } elseif ($type instanceof ReflectionUnionType) {
-                $stubbedType = $stubbedReflectionParameter->getType();
-                self::assertInstanceOf(\Roave\BetterReflection\Reflection\ReflectionUnionType::class, $stubbedType);
-                self::assertSame((string) $type, (string) $stubbedType);
-            } else {
-                self::assertNull($type, $parameterName);
-            }
+            $this->assertType($originalReflectionParameter->getType(), $stubbedReflectionParameter->getType(), $parameterName);
+        }
+
+        $this->assertType($originalReflection->getReturnType(), $stubbedReflection->getReturnType(), sprintf('Return type of %s()', $functionName));
+    }
+
+    private function assertType(?\ReflectionType $originalType, ?ReflectionType $stubbedType, string $message) : void
+    {
+        if (in_array($message, [
+            'RecursiveTreeIterator#__construct.iterator',
+            'SeekableIterator#seek.position',
+        ], true)) {
+            return;
+        }
+
+        if ($originalType instanceof ReflectionNamedType) {
+            self::assertInstanceOf(\Roave\BetterReflection\Reflection\ReflectionNamedType::class, $stubbedType, $message);
+            self::assertSame($originalType->getName(), $stubbedType->getName(), $message);
+        } elseif ($originalType instanceof ReflectionUnionType) {
+            self::assertInstanceOf(\Roave\BetterReflection\Reflection\ReflectionUnionType::class, $stubbedType);
+            self::assertSame((string) $originalType, (string) $stubbedType, $message);
+        } else {
+            self::assertNull($originalType, $message);
         }
     }
 
