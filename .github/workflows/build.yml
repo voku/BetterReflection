@@ -45,15 +45,15 @@ jobs:
 
       - name: "Update PHPUnit"
         if: matrix.php-version == '7.4' || matrix.php-version == '8.0'
-        run: "composer require --dev phpunit/phpunit:^9.1.5 --update-with-dependencies"
+        run: "composer require --dev phpunit/phpunit:^9.1.5 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "Install lowest dependencies"
         if: ${{ matrix.dependencies == 'lowest' }}
-        run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress --no-suggest"
+        run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress --no-suggest --ignore-platform-reqs"
 
       - name: "Install highest dependencies"
         if: ${{ matrix.dependencies == 'highest' }}
-        run: "composer update --prefer-dist --no-interaction --no-progress --no-suggest"
+        run: "composer update --prefer-dist --no-interaction --no-progress --no-suggest --ignore-platform-reqs"
 
       - name: "Tests"
         run: "php -dmemory_limit=-1 vendor/phpunit/phpunit/phpunit"
@@ -94,11 +94,11 @@ jobs:
 
       - name: "Install lowest dependencies"
         if: ${{ matrix.dependencies == 'lowest' }}
-        run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress --no-suggest"
+        run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress --no-suggest --ignore-platform-reqs"
 
       - name: "Install highest dependencies"
         if: ${{ matrix.dependencies == 'highest' }}
-        run: "composer update --prefer-dist --no-interaction --no-progress --no-suggest"
+        run: "composer update --prefer-dist --no-interaction --no-progress --no-suggest --ignore-platform-reqs"
 
       - name: "Test Compatibility"
         run: "vendor/bin/phpunit test/compat"
@@ -137,11 +137,11 @@ jobs:
 
       - name: "Install lowest dependencies"
         if: ${{ matrix.dependencies == 'lowest' }}
-        run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress --no-suggest"
+        run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress --no-suggest --ignore-platform-reqs"
 
       - name: "Install highest dependencies"
         if: ${{ matrix.dependencies == 'highest' }}
-        run: "composer update --prefer-dist --no-interaction --no-progress --no-suggest"
+        run: "composer update --prefer-dist --no-interaction --no-progress --no-suggest --ignore-platform-reqs"
 
       - name: "Check Demo Scripts"
         run: "test/demo/check-demo.sh"
@@ -206,7 +206,7 @@ jobs:
           restore-keys: "php-${{ matrix.php-version }}"
 
       - name: "Install dependencies"
-        run: "composer install"
+        run: "composer install --ignore-platform-reqs"
 
       - name: "PHPStan"
         run: "vendor/bin/phpstan analyse --memory-limit=-1"
