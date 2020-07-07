@@ -298,7 +298,7 @@ class ReflectionParameterTest extends TestCase
         $method    = $classInfo->getMethod('foo');
 
         $stringParamType = $method->getParameter('stringParamAllowsNull')->getType();
-        self::assertSame('string', (string) $stringParamType);
+        self::assertSame('?string', (string) $stringParamType);
         self::assertTrue($stringParamType->isBuiltin());
         self::assertTrue($stringParamType->allowsNull());
     }
@@ -306,9 +306,9 @@ class ReflectionParameterTest extends TestCase
     public function nullableParameterTypeFunctionProvider() : array
     {
         return [
-            ['nullableIntParam', 'int'],
-            ['nullableClassParam', stdClass::class],
-            ['nullableStringParamWithDefaultValue', 'string'],
+            ['nullableIntParam', '?int'],
+            ['nullableClassParam', '?' . stdClass::class],
+            ['nullableStringParamWithDefaultValue', '?string'],
         ];
     }
 

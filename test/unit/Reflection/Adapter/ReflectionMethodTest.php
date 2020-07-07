@@ -19,7 +19,7 @@ use Roave\BetterReflection\Reflection\Exception\ObjectNotInstanceOfClass;
 use Roave\BetterReflection\Reflection\ReflectionClass as BetterReflectionClass;
 use Roave\BetterReflection\Reflection\ReflectionMethod as BetterReflectionMethod;
 use Roave\BetterReflection\Reflection\ReflectionParameter as BetterReflectionParameter;
-use Roave\BetterReflection\Reflection\ReflectionType as BetterReflectionType;
+use Roave\BetterReflection\Reflection\ReflectionNamedType as BetterReflectionNamedType;
 use Roave\BetterReflection\Util\FileHelper;
 use stdClass;
 use Throwable;
@@ -56,7 +56,7 @@ class ReflectionMethodTest extends TestCase
 
         $mockMethod = $this->createMock(BetterReflectionMethod::class);
 
-        $mockType = $this->createMock(BetterReflectionType::class);
+        $mockType = $this->createMock(BetterReflectionNamedType::class);
 
         $closure = static function () : void {
         };

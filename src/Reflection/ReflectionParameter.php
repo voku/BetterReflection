@@ -379,6 +379,10 @@ class ReflectionParameter
             return null;
         }
 
+        if (!$type instanceof NullableType && $this->allowsNull()) {
+        	$type = new NullableType($type);
+		}
+
         return ReflectionType::createFromTypeAndReflector($type);
     }
 

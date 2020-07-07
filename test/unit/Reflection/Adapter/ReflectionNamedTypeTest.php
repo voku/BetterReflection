@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use ReflectionClass as CoreReflectionClass;
 use ReflectionNamedType as CoreReflectionNamedType;
 use Roave\BetterReflection\Reflection\Adapter\ReflectionNamedType as ReflectionNamedTypeAdapter;
-use Roave\BetterReflection\Reflection\ReflectionType as BetterReflectionType;
+use Roave\BetterReflection\Reflection\ReflectionNamedType as BetterReflectionNamedType;
 use function array_combine;
 use function array_map;
 use function get_class_methods;
@@ -54,7 +54,7 @@ class ReflectionNamedTypeTest extends TestCase
      */
     public function testAdapterMethods(string $methodName, ?string $expectedException, $returnValue, array $args) : void
     {
-        $reflectionStub = $this->createMock(BetterReflectionType::class);
+        $reflectionStub = $this->createMock(BetterReflectionNamedType::class);
 
         if ($expectedException === null) {
             $reflectionStub->expects($this->once())
@@ -73,8 +73,8 @@ class ReflectionNamedTypeTest extends TestCase
 
     public function testIsInstanceOfCoreReflectionType() : void
     {
-        $reflectionStub = $this->createMock(BetterReflectionType::class);
-        $adapter        = ReflectionNamedTypeAdapter::fromReturnTypeOrNull($reflectionStub);
+        $reflectionStub = $this->createMock(BetterReflectionNamedType::class);
+        $adapter        = new ReflectionNamedTypeAdapter($reflectionStub);
         $this->assertInstanceOf(CoreReflectionNamedType::class, $adapter);
     }
 }

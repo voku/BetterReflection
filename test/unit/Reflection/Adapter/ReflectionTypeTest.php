@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Roave\BetterReflectionTest\Reflection\Adapter;
 
+use PhpParser\Node\Identifier;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass as CoreReflectionClass;
 use ReflectionType as CoreReflectionType;
+use Roave\BetterReflection\Reflection\Adapter\ReflectionNamedType as ReflectionNamedTypeAdapter;
+use Roave\BetterReflection\Reflection\Adapter\ReflectionUnionType as ReflectionUnionTypeAdapter;
 use Roave\BetterReflection\Reflection\Adapter\ReflectionType as ReflectionTypeAdapter;
+use Roave\BetterReflection\Reflection\ReflectionNamedType as BetterReflectionNamedType;
 use Roave\BetterReflection\Reflection\ReflectionType as BetterReflectionType;
-use Roave\BetterReflection\Reflector\Reflector;
 use function array_combine;
 use function array_map;
 use function assert;
@@ -32,11 +35,23 @@ class ReflectionTypeTest extends TestCase
     /**
      * @dataProvider coreReflectionTypeNamesProvider
      */
-    public function testCoreReflectionTypes(string $methodName) : void
+    public function testCoreNamedReflectionTypes(string $methodName) : void
     {
-        $reflectionTypeAdapterReflection = new CoreReflectionClass(ReflectionTypeAdapter::class);
+        $reflectionTypeAdapterReflection = new CoreReflectionClass(ReflectionNamedTypeAdapter::class);
         self::assertTrue($reflectionTypeAdapterReflection->hasMethod($methodName));
     }
+
+	/**
+	 * @dataProvider coreReflectionTypeNamesProvider
+	 */
+	public function testCoreUnionReflectionTypes(string $methodName) : void
+	{
+		if (!class_exists(\ReflectionUnionType::class)) {
+			$this->markTestSkipped('ReflectionUnionType does not exist.');
+		}
+		$reflectionTypeAdapterReflection = new CoreReflectionClass(ReflectionUnionTypeAdapter::class);
+		self::assertTrue($reflectionTypeAdapterReflection->hasMethod($methodName));
+	}
 
     public function methodExpectationProvider() : array
     {
@@ -55,7 +70,7 @@ class ReflectionTypeTest extends TestCase
      */
     public function testAdapterMethods(string $methodName, ?string $expectedException, $returnValue, array $args) : void
     {
-        $reflectionStub = $this->createMock(BetterReflectionType::class);
+        $reflectionStub = $this->createMock(BetterReflectionNamedType::class);
 
         if ($expectedException === null) {
             $reflectionStub->expects($this->once())
@@ -68,7 +83,7 @@ class ReflectionTypeTest extends TestCase
             $this->expectException($expectedException);
         }
 
-        $adapter = new ReflectionTypeAdapter($reflectionStub);
+        $adapter = ReflectionTypeAdapter::fromReturnTypeOrNull($reflectionStub);
         $adapter->{$methodName}(...$args);
     }
 
@@ -79,25 +94,21 @@ class ReflectionTypeTest extends TestCase
 
     public function testFromReturnTypeOrNullWithBetterReflectionType() : void
     {
-        self::assertInstanceOf(ReflectionTypeAdapter::class, ReflectionTypeAdapter::fromReturnTypeOrNull($this->createMock(BetterReflectionType::class)));
+        self::assertInstanceOf(ReflectionNamedTypeAdapter::class, ReflectionTypeAdapter::fromReturnTypeOrNull($this->createMock(BetterReflectionNamedType::class)));
     }
 
     public function testSelfIsNotBuiltin() : void
     {
-        $reflector = $this->createMock(Reflector::class);
-        assert($reflector instanceof Reflector);
-        $betterReflectionType  = BetterReflectionType::createFromTypeAndReflector('self', false, $reflector);
-        $reflectionTypeAdapter = new ReflectionTypeAdapter($betterReflectionType);
+        $betterReflectionType  = BetterReflectionType::createFromTypeAndReflector(new Identifier('self'));
+        $reflectionTypeAdapter = ReflectionTypeAdapter::fromReturnTypeOrNull($betterReflectionType);
 
         self::assertFalse($reflectionTypeAdapter->isBuiltin());
     }
 
     public function testParentIsNotBuiltin() : void
     {
-        $reflector = $this->createMock(Reflector::class);
-        assert($reflector instanceof Reflector);
-        $betterReflectionType  = BetterReflectionType::createFromTypeAndReflector('parent', false, $reflector);
-        $reflectionTypeAdapter = new ReflectionTypeAdapter($betterReflectionType);
+        $betterReflectionType  = BetterReflectionType::createFromTypeAndReflector(new Identifier('parent'));
+        $reflectionTypeAdapter = ReflectionTypeAdapter::fromReturnTypeOrNull($betterReflectionType);
 
         self::assertFalse($reflectionTypeAdapter->isBuiltin());
     }

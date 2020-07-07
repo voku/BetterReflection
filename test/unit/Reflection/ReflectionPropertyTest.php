@@ -638,7 +638,7 @@ PHP;
             ['integerProperty', 'int'],
             ['classProperty', 'stdClass'],
             ['noTypeProperty', ''],
-            ['nullableStringProperty', 'string'],
+            ['nullableStringProperty', '?string'],
             ['arrayProperty', 'array'],
         ];
     }
