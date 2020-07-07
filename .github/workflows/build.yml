@@ -15,6 +15,7 @@ jobs:
     runs-on: ${{ matrix.operating-system }}
 
     strategy:
+      fail-fast: false
       matrix:
         dependencies: ["lowest", "highest"]
         php-version:
@@ -64,6 +65,7 @@ jobs:
     runs-on: ${{ matrix.operating-system }}
 
     strategy:
+      fail-fast: false
       matrix:
         dependencies: ["lowest", "highest"]
         php-version:
@@ -109,6 +111,7 @@ jobs:
     runs-on: "ubuntu-latest"
 
     strategy:
+      fail-fast: false
       matrix:
         dependencies: ["lowest", "highest"]
         php-version:
@@ -183,6 +186,7 @@ jobs:
     runs-on: "ubuntu-latest"
 
     strategy:
+      fail-fast: false
       matrix:
         php-version:
           - "7.4"
