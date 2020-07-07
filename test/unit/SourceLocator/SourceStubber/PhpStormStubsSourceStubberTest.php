@@ -21,7 +21,10 @@ use Roave\BetterReflection\Reflector\ConstantReflector;
 use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use Roave\BetterReflection\Reflector\FunctionReflector;
 use Roave\BetterReflection\SourceLocator\Ast\Locator;
+use Roave\BetterReflection\SourceLocator\SourceStubber\AggregateSourceStubber;
 use Roave\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use Roave\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
+use Roave\BetterReflection\SourceLocator\SourceStubber\SourceStubber;
 use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use Roave\BetterReflectionTest\BetterReflectionSingleton;
 use function array_filter;
@@ -43,7 +46,7 @@ use const PHP_VERSION_ID;
  */
 class PhpStormStubsSourceStubberTest extends TestCase
 {
-    /** @var PhpStormStubsSourceStubber */
+    /** @var SourceStubber */
     private $sourceStubber;
 
     /** @var PhpInternalSourceLocator */
@@ -64,7 +67,15 @@ class PhpStormStubsSourceStubberTest extends TestCase
 
         $betterReflection = BetterReflectionSingleton::instance();
 
-        $this->sourceStubber            = new PhpStormStubsSourceStubber($betterReflection->phpParser());
+        $stubber = new PhpStormStubsSourceStubber($betterReflection->phpParser());
+        if (PHP_VERSION_ID >= 80000) {
+            $stubber = new AggregateSourceStubber(
+                new ReflectionSourceStubber(),
+                $stubber
+            );
+        }
+
+        $this->sourceStubber            = $stubber;
         $this->phpInternalSourceLocator = new PhpInternalSourceLocator(
             $betterReflection->astLocator(),
             $this->sourceStubber
@@ -391,13 +402,12 @@ class PhpStormStubsSourceStubberTest extends TestCase
 
             self::assertSame($originalReflectionParameter->isVariadic(), $stubbedReflectionParameter->isVariadic(), $parameterName);
 
-            $class = $originalReflectionParameter->getClass();
-            if ($class) {
-                $stubbedClass = $stubbedReflectionParameter->getClass();
-                self::assertInstanceOf(ReflectionClass::class, $stubbedClass, $parameterName);
-                self::assertSame($class->getName(), $stubbedClass->getName(), $parameterName);
+            $type = $originalReflectionParameter->getType();
+            if ($type instanceof ReflectionNamedType) {
+                $stubbedClass = $stubbedReflectionParameter->getType();
+                self::assertSame($type->getName(), $stubbedClass->getName(), $parameterName);
             } else {
-                self::assertNull($originalReflectionParameter->getClass(), $parameterName);
+                self::assertNull($type, $parameterName);
             }
         }
     }
