@@ -4,46 +4,34 @@ declare(strict_types=1);
 
 namespace Roave\BetterReflection\Reflection\Adapter;
 
+use LogicException;
 use ReflectionType as CoreReflectionType;
+use Roave\BetterReflection\Reflection\ReflectionNamedType as BetterReflectionNamedType;
 use Roave\BetterReflection\Reflection\ReflectionType as BetterReflectionType;
+use Roave\BetterReflection\Reflection\ReflectionUnionType as BetterReflectionUnionType;
+use function get_class;
+use function sprintf;
 
-class ReflectionType extends CoreReflectionType
+class ReflectionType
 {
-    /** @var BetterReflectionType */
-    private $betterReflectionType;
-
-    public function __construct(BetterReflectionType $betterReflectionType)
+    private function __construct()
     {
-        $this->betterReflectionType = $betterReflectionType;
     }
 
-    public static function fromReturnTypeOrNull(?BetterReflectionType $betterReflectionType) : ?self
+    public static function fromReturnTypeOrNull(?BetterReflectionType $betterReflectionType) : ?CoreReflectionType
     {
         if ($betterReflectionType === null) {
             return null;
         }
 
-        return new self($betterReflectionType);
-    }
-
-    public function __toString() : string
-    {
-        return $this->betterReflectionType->__toString();
-    }
-
-    public function allowsNull() : bool
-    {
-        return $this->betterReflectionType->allowsNull();
-    }
-
-    public function isBuiltin() : bool
-    {
-        $type = (string) $this->betterReflectionType;
-
-        if ($type === 'self' || $type === 'parent') {
-            return false;
+        if ($betterReflectionType instanceof BetterReflectionNamedType) {
+            return new ReflectionNamedType($betterReflectionType);
         }
 
-        return $this->betterReflectionType->isBuiltin();
+        if ($betterReflectionType instanceof BetterReflectionUnionType) {
+            return new ReflectionUnionType($betterReflectionType);
+        }
+
+        throw new LogicException(sprintf('%s is not supported.', get_class($betterReflectionType)));
     }
 }

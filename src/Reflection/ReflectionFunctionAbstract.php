@@ -427,11 +427,7 @@ abstract class ReflectionFunctionAbstract
             return null;
         }
 
-        if ($returnType instanceof NullableType) {
-            return ReflectionType::createFromTypeAndReflector((string) $returnType->type, true, $this->reflector);
-        }
-
-        return ReflectionType::createFromTypeAndReflector((string) $returnType, false, $this->reflector);
+        return ReflectionType::createFromTypeAndReflector($returnType);
     }
 
     /**

@@ -201,7 +201,7 @@ class ReflectionMethod extends CoreReflectionMethod
      */
     public function getReturnType()
     {
-        return ReflectionNamedType::fromReturnTypeOrNull($this->betterReflectionMethod->getReturnType());
+        return ReflectionType::fromReturnTypeOrNull($this->betterReflectionMethod->getReturnType());
     }
 
     /**

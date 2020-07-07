@@ -30,6 +30,7 @@ use function in_array;
 use function is_array;
 use function is_object;
 use function is_string;
+use function ltrim;
 use function sprintf;
 use function strtolower;
 
@@ -378,11 +379,7 @@ class ReflectionParameter
             return null;
         }
 
-        if ($type instanceof NullableType) {
-            $type = $type->type;
-        }
-
-        return ReflectionType::createFromTypeAndReflector((string) $type, $this->allowsNull(), $this->reflector);
+        return ReflectionType::createFromTypeAndReflector($type);
     }
 
     /**
@@ -416,7 +413,9 @@ class ReflectionParameter
      */
     public function isArray() : bool
     {
-        return strtolower((string) $this->getType()) === 'array';
+        $type = ltrim((string) $this->getType(), '?');
+
+        return strtolower($type) === 'array';
     }
 
     /**
@@ -424,7 +423,9 @@ class ReflectionParameter
      */
     public function isCallable() : bool
     {
-        return strtolower((string) $this->getType()) === 'callable';
+        $type = ltrim((string) $this->getType(), '?');
+
+        return strtolower($type) === 'callable';
     }
 
     /**
@@ -499,8 +500,11 @@ class ReflectionParameter
         }
 
         $type = $this->getType();
-        assert($type instanceof ReflectionType);
-        $typeHint = (string) $type;
+        if (! $type instanceof ReflectionNamedType) {
+            return null;
+        }
+
+        $typeHint = $type->getName();
 
         if ($typeHint === 'self') {
             $declaringClass = $this->getDeclaringClass();
