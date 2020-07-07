@@ -73,7 +73,7 @@ final class ReflectionSourceStubber implements SourceStubber
         $this->prettyPrinter  = new Standard(self::BUILDER_OPTIONS);
     }
 
-    public function hasClass($className) : bool
+    public function hasClass(string $className) : bool
     {
         return class_exists($className, false) || interface_exists($className, false) || trait_exists($className, false);
     }
