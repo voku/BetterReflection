@@ -12,6 +12,7 @@ use ReflectionFunction as CoreReflectionFunction;
 use ReflectionMethod as CoreReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter as CoreReflectionParameter;
+use ReflectionUnionType;
 use Roave\BetterReflection\Reflection\ReflectionClass;
 use Roave\BetterReflection\Reflection\ReflectionConstant;
 use Roave\BetterReflection\Reflection\ReflectionMethod;
@@ -404,8 +405,13 @@ class PhpStormStubsSourceStubberTest extends TestCase
 
             $type = $originalReflectionParameter->getType();
             if ($type instanceof ReflectionNamedType) {
-                $stubbedClass = $stubbedReflectionParameter->getType();
-                self::assertSame($type->getName(), $stubbedClass->getName(), $parameterName);
+                $stubbedType = $stubbedReflectionParameter->getType();
+                self::assertInstanceOf(\Roave\BetterReflection\Reflection\ReflectionNamedType::class, $stubbedType);
+                self::assertSame($type->getName(), $stubbedType->getName(), $parameterName);
+            } elseif ($type instanceof ReflectionUnionType) {
+                $stubbedType = $stubbedReflectionParameter->getType();
+                self::assertInstanceOf(\Roave\BetterReflection\Reflection\ReflectionUnionType::class, $stubbedType);
+                self::assertSame((string) $type, (string) $stubbedType);
             } else {
                 self::assertNull($type, $parameterName);
             }
@@ -637,6 +643,12 @@ class PhpStormStubsSourceStubberTest extends TestCase
     public function testFilename() : void
     {
         $reflection = $this->classReflector->reflect('XMLReader');
+        if (PHP_VERSION_ID >= 80000) {
+            self::assertNull($reflection->getFileName());
+
+            return;
+        }
+
         $this->assertSame(realpath(__DIR__ . '/../../../../vendor/jetbrains/phpstorm-stubs/xmlreader/xmlreader.php'), realpath($reflection->getFileName()));
     }
 
