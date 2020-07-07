@@ -11,10 +11,13 @@ use RecursiveArrayIterator;
 use ReflectionClass as CoreReflectionClass;
 use ReflectionException;
 use ReflectionMethod as CoreReflectionMethod;
+use ReflectionNamedType;
 use ReflectionParameter as CoreReflectionParameter;
+use ReflectionUnionType;
 use Roave\BetterReflection\Reflection\ReflectionClass;
 use Roave\BetterReflection\Reflection\ReflectionMethod;
 use Roave\BetterReflection\Reflection\ReflectionParameter;
+use Roave\BetterReflection\Reflection\ReflectionType;
 use Roave\BetterReflection\Reflector\ClassReflector;
 use Roave\BetterReflection\Reflector\ConstantReflector;
 use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
@@ -65,6 +68,19 @@ class ReflectionSourceStubberTest extends TestCase
             $this->stubber
         );
         $this->classReflector           = new ClassReflector($this->phpInternalSourceLocator);
+    }
+
+    private function assertType(?\ReflectionType $originalType, ?ReflectionType $stubbedType, string $message) : void
+    {
+        if ($originalType instanceof ReflectionNamedType) {
+            self::assertInstanceOf(\Roave\BetterReflection\Reflection\ReflectionNamedType::class, $stubbedType, $message);
+            self::assertSame($originalType->getName(), $stubbedType->getName(), $message);
+        } elseif ($originalType instanceof ReflectionUnionType) {
+            self::assertInstanceOf(\Roave\BetterReflection\Reflection\ReflectionUnionType::class, $stubbedType);
+            self::assertSame((string) $originalType, (string) $stubbedType, $message);
+        } else {
+            self::assertNull($originalType, $message);
+        }
     }
 
     public function testCanStubClass() : void
@@ -292,6 +308,7 @@ class ReflectionSourceStubberTest extends TestCase
         self::assertSame($original->returnsReference(), $stubbed->returnsReference());
         self::assertSame($original->isStatic(), $stubbed->isStatic());
         self::assertSame($original->isFinal(), $stubbed->isFinal());
+        $this->assertType($original->getReturnType(), $stubbed->getReturnType(), sprintf('Return type of %s::%s()', $stubbed->getDeclaringClass()->getName(), $stubbed->getName()));
     }
 
     private function assertSameParameterAttributes(
@@ -335,6 +352,8 @@ class ReflectionSourceStubberTest extends TestCase
         } else {
             self::assertNull($stubbed->getClass(), $parameterName);
         }
+
+        $this->assertType($original->getType(), $stubbed->getType(), $parameterName);
     }
 
     public function testFunctionWithParameterPassedByReference() : void
