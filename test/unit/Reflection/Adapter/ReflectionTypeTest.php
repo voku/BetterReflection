@@ -8,14 +8,15 @@ use PhpParser\Node\Identifier;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass as CoreReflectionClass;
 use ReflectionType as CoreReflectionType;
+use ReflectionUnionType;
 use Roave\BetterReflection\Reflection\Adapter\ReflectionNamedType as ReflectionNamedTypeAdapter;
-use Roave\BetterReflection\Reflection\Adapter\ReflectionUnionType as ReflectionUnionTypeAdapter;
 use Roave\BetterReflection\Reflection\Adapter\ReflectionType as ReflectionTypeAdapter;
+use Roave\BetterReflection\Reflection\Adapter\ReflectionUnionType as ReflectionUnionTypeAdapter;
 use Roave\BetterReflection\Reflection\ReflectionNamedType as BetterReflectionNamedType;
 use Roave\BetterReflection\Reflection\ReflectionType as BetterReflectionType;
 use function array_combine;
 use function array_map;
-use function assert;
+use function class_exists;
 use function get_class_methods;
 
 /**
@@ -41,17 +42,18 @@ class ReflectionTypeTest extends TestCase
         self::assertTrue($reflectionTypeAdapterReflection->hasMethod($methodName));
     }
 
-	/**
-	 * @dataProvider coreReflectionTypeNamesProvider
-	 */
-	public function testCoreUnionReflectionTypes(string $methodName) : void
-	{
-		if (!class_exists(\ReflectionUnionType::class)) {
-			$this->markTestSkipped('ReflectionUnionType does not exist.');
-		}
-		$reflectionTypeAdapterReflection = new CoreReflectionClass(ReflectionUnionTypeAdapter::class);
-		self::assertTrue($reflectionTypeAdapterReflection->hasMethod($methodName));
-	}
+    /**
+     * @dataProvider coreReflectionTypeNamesProvider
+     */
+    public function testCoreUnionReflectionTypes(string $methodName) : void
+    {
+        if (! class_exists(ReflectionUnionType::class)) {
+            $this->markTestSkipped('ReflectionUnionType does not exist.');
+        }
+
+        $reflectionTypeAdapterReflection = new CoreReflectionClass(ReflectionUnionTypeAdapter::class);
+        self::assertTrue($reflectionTypeAdapterReflection->hasMethod($methodName));
+    }
 
     public function methodExpectationProvider() : array
     {

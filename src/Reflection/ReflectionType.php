@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Roave\BetterReflection\Reflection;
 
-use LogicException;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\UnionType;
 use function array_key_exists;
-use function get_class;
-use function sprintf;
 use function strtolower;
 
 abstract class ReflectionType
@@ -48,8 +45,6 @@ abstract class ReflectionType
 
     /**
      * @param Identifier|Name|NullableType|UnionType $type
-     *
-     * @return self
      */
     public static function createFromTypeAndReflector($type) : self
     {
