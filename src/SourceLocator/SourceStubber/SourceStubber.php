@@ -9,6 +9,8 @@ namespace Roave\BetterReflection\SourceLocator\SourceStubber;
  */
 interface SourceStubber
 {
+    public function hasClass(string $className) : bool;
+
     /**
      * Generates stub for given class. Returns null when it cannot generate the stub.
      */
