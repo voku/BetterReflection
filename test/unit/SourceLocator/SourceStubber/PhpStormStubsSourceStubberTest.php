@@ -418,6 +418,8 @@ class PhpStormStubsSourceStubberTest extends TestCase
         if (in_array($message, [
             'RecursiveTreeIterator#__construct.iterator',
             'SeekableIterator#seek.position',
+            'sapi_windows_cp_set.code_page',
+            'sapi_windows_cp_conv.subject',
         ], true)) {
             return;
         }
