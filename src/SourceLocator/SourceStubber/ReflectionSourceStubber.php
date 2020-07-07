@@ -119,6 +119,12 @@ final class ReflectionSourceStubber implements SourceStubber
 
         $this->addDocComment($functionNode, $functionReflection);
         $this->addParameters($functionNode, $functionReflection);
+        $returnType = $functionReflection->getReturnType();
+        assert($returnType instanceof CoreReflectionNamedType || $returnType instanceof  CoreReflectionUnionType || $returnType === null);
+
+        if ($returnType !== null) {
+            $functionNode->setReturnType($this->formatType($returnType));
+        }
 
         $extensionName = $functionReflection->getExtensionName() ?: null;
 
