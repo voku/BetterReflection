@@ -26,6 +26,7 @@ class ReflectionType
         'iterable' => null,
         'object'   => null,
         'void'     => null,
+        'mixed'    => null,
     ];
 
     /** @var string */
