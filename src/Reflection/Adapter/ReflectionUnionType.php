@@ -37,9 +37,4 @@ class ReflectionUnionType extends CoreReflectionUnionType
             return ReflectionType::fromReturnTypeOrNull($type);
         }, $this->betterReflectionType->getTypes());
     }
-
-    public function isBuiltin() : bool
-    {
-        return false;
-    }
 }

@@ -15,7 +15,7 @@ class ReflectionUnionType extends ReflectionType
 
     public function __construct(UnionType $type, bool $allowsNull)
     {
-        parent::__construct($type, $allowsNull);
+        parent::__construct($allowsNull);
         $this->types = array_map(static function ($type) : ReflectionType {
             return ReflectionType::createFromTypeAndReflector($type);
         }, $type->types);
