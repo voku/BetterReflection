@@ -7,26 +7,14 @@ namespace Roave\BetterReflectionTest\Reflection;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Roave\BetterReflection\Reflection\ReflectionType;
-use Roave\BetterReflection\Reflector\Reflector;
 
 /**
  * @covers \Roave\BetterReflection\Reflection\ReflectionType
  */
 class ReflectionTypeTest extends TestCase
 {
-    /** @var Reflector|MockObject */
-    private $reflector;
-
-    protected function setUp() : void
-    {
-        parent::setUp();
-
-        $this->reflector = $this->createMock(Reflector::class);
-    }
-
     public function testCreateFromType() : void
     {
         $typeInfo = ReflectionType::createFromTypeAndReflector(new Identifier('string'));
