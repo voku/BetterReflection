@@ -85,6 +85,16 @@ class ReflectionParameterTest extends TestCase
         self::assertSame('a', $parameterInfo->getName());
     }
 
+    public function testParamWithConstant(): void
+    {
+        $parameterInfo = ReflectionParameter::createFromClosure(static function (int $sort = SORT_ASC): void {
+        }, 'sort');
+
+        self::assertInstanceOf(ReflectionParameter::class, $parameterInfo);
+        self::assertSame(false, $parameterInfo->allowsNull());
+        self::assertSame(4, $parameterInfo->getDefaultValue());
+    }
+
     public function testCreateFromSpecWithArray() : void
     {
         $parameterInfo = ReflectionParameter::createFromSpec([SplDoublyLinkedList::class, 'add'], 'index');

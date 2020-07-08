@@ -194,7 +194,10 @@ class ReflectionParameter
             && ! in_array(strtolower($defaultValueNode->name->parts[0]), ['true', 'false', 'null'], true)) {
             $this->isDefaultValueConstant   = true;
             $this->defaultValueConstantName = $defaultValueNode->name->parts[0];
-            $this->defaultValue             = null;
+            $this->defaultValue             = (new CompileNodeToValue())->__invoke(
+                $defaultValueNode,
+                new CompilerContext($this->reflector, null, null, null, null)
+            );
 
             return;
         }
