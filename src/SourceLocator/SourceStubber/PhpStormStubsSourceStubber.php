@@ -124,7 +124,8 @@ final class PhpStormStubsSourceStubber implements SourceStubber
             return null;
         }
 
-        $filePath = $this->classMap[$lowercaseClassName];
+        $filePath  = $this->classMap[$lowercaseClassName];
+        $classNode = $this->findClassNode($filePath, $lowercaseClassName);
 
         if (! array_key_exists($lowercaseClassName, $this->classNodes)) {
             $this->parseFile($filePath);
@@ -136,11 +137,24 @@ final class PhpStormStubsSourceStubber implements SourceStubber
             }
         }
 
-        if ($this->classNodes[$lowercaseClassName] === null) {
+        if ($classNode === null) {
             return null;
         }
 
-        $stub = $this->createStub($this->classNodes[$lowercaseClassName]);
+        if ($classNode instanceof Node\Stmt\Class_) {
+            if ($classNode->extends !== null) {
+                $filteredExtends = $this->filterNames([$classNode->extends]);
+                if ($filteredExtends === []) {
+                    $classNode->extends = null;
+                }
+            }
+
+            $classNode->implements = $this->filterNames($classNode->implements);
+        } elseif ($classNode instanceof Node\Stmt\Interface_) {
+            $classNode->extends = $this->filterNames($classNode->extends);
+        }
+
+        $stub = $this->createStub($classNode);
 
         if ($className === Traversable::class) {
             // See https://github.com/JetBrains/phpstorm-stubs/commit/0778a26992c47d7dbee4d0b0bfb7fad4344371b1#diff-575bacb45377d474336c71cbf53c1729
@@ -148,6 +162,47 @@ final class PhpStormStubsSourceStubber implements SourceStubber
         }
 
         return new StubData($stub, $this->getExtensionFromFilePath($filePath), $this->getAbsoluteFilePath($filePath));
+    }
+
+    private function findClassNode(string $filePath, string $lowercaseName) : ?Node\Stmt\ClassLike
+    {
+        if (! array_key_exists($lowercaseName, $this->classNodes)) {
+            $this->parseFile($filePath);
+
+            if (! array_key_exists($lowercaseName, $this->classNodes)) {
+                $this->classNodes[$lowercaseName] = null;
+
+                return null;
+            }
+        }
+
+        return $this->classNodes[$lowercaseName];
+    }
+
+    /**
+     * @param Node\Name[] $names
+     *
+     * @return Node\Name[]
+     */
+    private function filterNames(array $names) : array
+    {
+        $filtered = [];
+        foreach ($names as $name) {
+            $lowercaseName = $name->toLowerString();
+            if (! array_key_exists($lowercaseName, $this->classMap)) {
+                continue;
+            }
+
+            $filePath  = $this->classMap[$lowercaseName];
+            $classNode = $this->findClassNode($filePath, $lowercaseName);
+            if ($classNode === null) {
+                continue;
+            }
+
+            $filtered[] = $name;
+        }
+
+        return $filtered;
     }
 
     public function generateFunctionStub(string $functionName) : ?StubData
@@ -227,7 +282,7 @@ final class PhpStormStubsSourceStubber implements SourceStubber
         foreach ($this->cachingVisitor->getClassNodes() as $className => $classNode) {
             assert(is_string($className));
             assert($classNode instanceof Node\Stmt\ClassLike);
-            if ($className !== 'CompileError' && $this->hasLaterSinceVersion($classNode)) {
+            if ($this->hasLaterSinceVersion($classNode)) {
                 continue;
             }
 

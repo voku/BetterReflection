@@ -420,6 +420,9 @@ class PhpStormStubsSourceStubberTest extends TestCase
             'SeekableIterator#seek.position',
             'sapi_windows_cp_set.code_page',
             'sapi_windows_cp_conv.subject',
+            'WeakReference#create.referent',
+            'Return type of WeakReference::create()',
+            'Return type of WeakReference::get()',
         ], true)) {
             return;
         }
@@ -696,6 +699,12 @@ class PhpStormStubsSourceStubberTest extends TestCase
                 70300,
                 false,
             ],
+            [
+                'ReflectionProperty',
+                'getType',
+                80000,
+                true,
+            ],
         ];
     }
 
@@ -774,7 +783,7 @@ class PhpStormStubsSourceStubberTest extends TestCase
             [
                 'CompileError',
                 70000,
-                true,
+                false,
             ],
         ];
     }
