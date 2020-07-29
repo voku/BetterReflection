@@ -7,7 +7,7 @@
         "ext-json": "*",
         "jetbrains/phpstorm-stubs": "dev-master#d4db4b4834d8a9c8fc3c0aa6dc3c9bae723bbc9c",
         "nikic/php-parser": "dev-master",
-        "phpdocumentor/reflection-docblock": "^4.3.4",
+        "phpdocumentor/reflection-docblock": "^4.3.4 || ^5.2.0",
         "phpdocumentor/type-resolver": "^1.0.0",
         "roave/signature": "^1.0"
     },
