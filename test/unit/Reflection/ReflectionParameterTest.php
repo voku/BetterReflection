@@ -489,6 +489,7 @@ class ReflectionParameterTest extends TestCase
 
     public function testIsDefaultValueConstantAndGetDefaultValueConstantName() : void
     {
+        \define('SOME_DEFINED_VALUE', 1);
         $classInfo = $this->reflector->reflect(Methods::class);
         $method    = $classInfo->getMethod('methodWithUpperCasedDefaults');
 
@@ -509,6 +510,7 @@ class ReflectionParameterTest extends TestCase
         $definedDefault = $method->getParameter('definedDefault');
         self::assertTrue($definedDefault->isDefaultValueConstant());
         self::assertSame('SOME_DEFINED_VALUE', $definedDefault->getDefaultValueConstantName());
+        self::assertSame(1, $definedDefault->getDefaultValue());
 
         $intDefault = $method->getParameter('intDefault');
         self::assertFalse($intDefault->isDefaultValueConstant());

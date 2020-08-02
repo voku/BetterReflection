@@ -194,9 +194,6 @@ class ReflectionParameter
             && ! in_array(strtolower($defaultValueNode->name->parts[0]), ['true', 'false', 'null'], true)) {
             $this->isDefaultValueConstant   = true;
             $this->defaultValueConstantName = $defaultValueNode->name->parts[0];
-            $this->defaultValue             = null;
-
-            return;
         }
 
         $namespace = null;
