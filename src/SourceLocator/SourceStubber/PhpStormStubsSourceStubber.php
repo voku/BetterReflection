@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Roave\BetterReflection\SourceLocator\SourceStubber;
 
+use Error;
 use JetBrains\PHPStormStub\PhpStormStubsMap;
+use ParseError;
 use PhpParser\BuilderFactory;
 use PhpParser\BuilderHelpers;
 use PhpParser\Node;
@@ -142,7 +144,13 @@ final class PhpStormStubsSourceStubber implements SourceStubber
         }
 
         if ($classNode instanceof Node\Stmt\Class_) {
-            if ($classNode->extends !== null) {
+            if (
+                $classNode->name instanceof Node\Identifier
+                && $classNode->name->toString() === ParseError::class
+                && $this->phpVersionId < 70300
+            ) {
+                $classNode->extends = new Node\Name\FullyQualified(Error::class);
+            } elseif ($classNode->extends !== null) {
                 $filteredExtends = $this->filterNames([$classNode->extends]);
                 if ($filteredExtends === []) {
                     $classNode->extends = null;

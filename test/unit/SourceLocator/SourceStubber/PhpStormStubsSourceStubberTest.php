@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Roave\BetterReflectionTest\SourceLocator\SourceStubber;
 
+use CompileError;
+use Error;
+use ParseError;
 use PhpParser\Lexer\Emulative;
 use PhpParser\ParserFactory;
 use PHPUnit\Framework\TestCase;
@@ -916,6 +919,40 @@ class PhpStormStubsSourceStubberTest extends TestCase
 
             self::assertSame($constantName, $e->getIdentifier()->getName());
         }
+    }
+
+    public function dataSubclass() : array
+    {
+        return [
+            [
+                ParseError::class,
+                CompileError::class,
+                70300,
+            ],
+            [
+                ParseError::class,
+                CompileError::class,
+                70400,
+            ],
+            [
+                ParseError::class,
+                Error::class,
+                70200,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider dataSubclass
+     */
+    public function testSubclass(
+        string $className,
+        string $subclassName,
+        int $phpVersionId
+    ) : void {
+        [$classReflector,,] = $this->getReflectors($phpVersionId);
+        $reflection = $classReflector->reflect($className);
+        self::assertTrue($reflection->isSubclassOf($subclassName));
     }
 
     /**
