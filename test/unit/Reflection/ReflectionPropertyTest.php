@@ -248,10 +248,12 @@ class ReflectionPropertyTest extends TestCase
 
     public function testGetDefaultProperty() : void
     {
+        require_once __DIR__ . '/../Fixture/Constants.php';
         $classInfo = (new ClassReflector(new SingleFileSourceLocator(__DIR__ . '/../Fixture/DefaultProperties.php', $this->astLocator)))->reflect('Foo');
 
         self::assertSame(123, $classInfo->getProperty('hasDefault')->getDefaultValue());
         self::assertNull($classInfo->getProperty('noDefault')->getDefaultValue());
+        self::assertSame('foo1', $classInfo->getProperty('defaultWithConstant')->getDefaultValue());
     }
 
     public function testCannotClone() : void

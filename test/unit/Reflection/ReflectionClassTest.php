@@ -709,6 +709,7 @@ PHP;
 
     public function testGetDefaultProperties() : void
     {
+        require_once __DIR__ . '/../Fixture/Constants.php';
         $classInfo = (new ClassReflector(new SingleFileSourceLocator(
             __DIR__ . '/../Fixture/DefaultProperties.php',
             $this->astLocator
@@ -717,6 +718,7 @@ PHP;
         self::assertSame([
             'hasDefault' => 123,
             'noDefault' => null,
+            'defaultWithConstant' => 'foo1',
         ], $classInfo->getDefaultProperties());
     }
 

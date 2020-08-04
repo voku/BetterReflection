@@ -950,8 +950,8 @@ class PhpStormStubsSourceStubberTest extends TestCase
         string $subclassName,
         int $phpVersionId
     ) : void {
-        [$classReflector,,] = $this->getReflectors($phpVersionId);
-        $reflection = $classReflector->reflect($className);
+        [$classReflector] = $this->getReflectors($phpVersionId);
+        $reflection       = $classReflector->reflect($className);
         self::assertTrue($reflection->isSubclassOf($subclassName));
     }
 

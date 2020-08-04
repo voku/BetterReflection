@@ -33,6 +33,7 @@ use Roave\BetterReflectionTest\Fixture\Php7ParameterTypeDeclarations;
 use Roave\BetterReflectionTest\FixtureOther\OtherClass;
 use SplDoublyLinkedList;
 use stdClass;
+use function define;
 use function sprintf;
 
 /**
@@ -489,7 +490,7 @@ class ReflectionParameterTest extends TestCase
 
     public function testIsDefaultValueConstantAndGetDefaultValueConstantName() : void
     {
-        \define('SOME_DEFINED_VALUE', 1);
+        define('SOME_DEFINED_VALUE', 1);
         $classInfo = $this->reflector->reflect(Methods::class);
         $method    = $classInfo->getMethod('methodWithUpperCasedDefaults');
 
@@ -541,8 +542,7 @@ class ReflectionParameterTest extends TestCase
 
     public function testGetDefaultValueConstantNameNamespacedConstants() : void
     {
-        $this->markTestSkipped('@todo - implement reflection of constants outside a class');
-
+        require_once __DIR__ . '/../Fixture/ClassWithConstantsAsDefaultValues.php';
         $reflector = new ClassReflector(new SingleFileSourceLocator(
             __DIR__ . '/../Fixture/ClassWithConstantsAsDefaultValues.php',
             $this->astLocator
@@ -552,9 +552,19 @@ class ReflectionParameterTest extends TestCase
 
         $param4 = $method->getParameter('param4');
         self::assertSame('Roave\BetterReflectionTest\Fixture\THIS_NAMESPACE_CONST', $param4->getDefaultValueConstantName());
+        self::assertSame('this_namespace', $param4->getDefaultValue());
 
         $param5 = $method->getParameter('param5');
         self::assertSame('Roave\BetterReflectionTest\FixtureOther\OTHER_NAMESPACE_CONST', $param5->getDefaultValueConstantName());
+        self::assertSame('other_namespace', $param5->getDefaultValue());
+
+        $param6 = $method->getParameter('param6');
+        self::assertSame('GLOBAL_CONSTANT', $param6->getDefaultValueConstantName());
+        self::assertSame(1, $param6->getDefaultValue());
+
+        $param7 = $method->getParameter('param7');
+        self::assertSame('Roave\BetterReflectionTest\Fixture\UNSURE_CONSTANT', $param7->getDefaultValueConstantName());
+        self::assertSame('here', $param7->getDefaultValue());
     }
 
     public function testGetDeclaringFunction() : void

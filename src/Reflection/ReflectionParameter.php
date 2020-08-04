@@ -19,12 +19,14 @@ use Roave\BetterReflection\NodeCompiler\CompilerContext;
 use Roave\BetterReflection\Reflection\Exception\Uncloneable;
 use Roave\BetterReflection\Reflection\StringCast\ReflectionParameterStringCast;
 use Roave\BetterReflection\Reflector\ClassReflector;
+use Roave\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use Roave\BetterReflection\Reflector\Reflector;
 use Roave\BetterReflection\TypesFinder\FindParameterType;
 use Roave\BetterReflection\Util\CalculateReflectionColum;
 use RuntimeException;
 use function assert;
 use function count;
+use function defined;
 use function get_class;
 use function in_array;
 use function is_array;
@@ -190,15 +192,32 @@ class ReflectionParameter
             $this->defaultValueConstantName = $className . '::' . $defaultValueNode->name->name;
         }
 
-        if ($defaultValueNode instanceof Node\Expr\ConstFetch
-            && ! in_array(strtolower($defaultValueNode->name->parts[0]), ['true', 'false', 'null'], true)) {
-            $this->isDefaultValueConstant   = true;
-            $this->defaultValueConstantName = $defaultValueNode->name->parts[0];
-        }
-
         $namespace = null;
         if ($this->declaringNamespace !== null && $this->declaringNamespace->name !== null) {
             $namespace = (string) $this->declaringNamespace->name;
+        }
+
+        if ($defaultValueNode instanceof Node\Expr\ConstFetch
+            && ! in_array(strtolower($defaultValueNode->name->toString()), ['true', 'false', 'null'], true)) {
+            $this->isDefaultValueConstant = true;
+
+            if ($namespace !== null && ! $defaultValueNode->name->isFullyQualified()) {
+                $namespacedName = sprintf('%s\\%s', $namespace, $defaultValueNode->name->toString());
+                if (defined($namespacedName)) {
+                    $this->defaultValueConstantName = $namespacedName;
+                } else {
+                    try {
+                        ReflectionConstant::createFromName($namespacedName);
+                        $this->defaultValueConstantName = $namespacedName;
+                    } catch (IdentifierNotFound $e) {
+                        // pass
+                    }
+                }
+            }
+
+            if ($this->defaultValueConstantName === null) {
+                $this->defaultValueConstantName = $defaultValueNode->name->toString();
+            }
         }
 
         $this->defaultValue = (new CompileNodeToValue())->__invoke(

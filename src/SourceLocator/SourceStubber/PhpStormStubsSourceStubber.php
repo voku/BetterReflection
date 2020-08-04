@@ -144,8 +144,7 @@ final class PhpStormStubsSourceStubber implements SourceStubber
         }
 
         if ($classNode instanceof Node\Stmt\Class_) {
-            if (
-                $classNode->name instanceof Node\Identifier
+            if ($classNode->name instanceof Node\Identifier
                 && $classNode->name->toString() === ParseError::class
                 && $this->phpVersionId < 70300
             ) {

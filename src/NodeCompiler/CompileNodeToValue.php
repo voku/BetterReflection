@@ -16,8 +16,8 @@ use function constant;
 use function defined;
 use function dirname;
 use function realpath;
-use function reset;
 use function sprintf;
+use function strtolower;
 
 class CompileNodeToValue
 {
@@ -115,8 +115,8 @@ class CompileNodeToValue
      */
     private function compileConstFetch(Node\Expr\ConstFetch $constNode, CompilerContext $context)
     {
-        $firstName = reset($constNode->name->parts);
-        switch ($firstName) {
+        $constantName = $constNode->name->toString();
+        switch (strtolower($constantName)) {
             case 'null':
                 return null;
             case 'false':
@@ -124,12 +124,25 @@ class CompileNodeToValue
             case 'true':
                 return true;
             default:
-                if (defined($firstName)) {
-                    return constant($firstName);
+                if ($context->getNamespace() !== null && ! $constNode->name->isFullyQualified()) {
+                    $namespacedName = sprintf('%s\\%s', $context->getNamespace(), $constantName);
+                    if (defined($namespacedName)) {
+                        return constant($namespacedName);
+                    }
+
+                    try {
+                        return ReflectionConstant::createFromName($namespacedName)->getValue();
+                    } catch (IdentifierNotFound $e) {
+                        // pass
+                    }
+                }
+
+                if (defined($constantName)) {
+                    return constant($constantName);
                 }
 
                 try {
-                    return ReflectionConstant::createFromName($firstName)->getValue();
+                    return ReflectionConstant::createFromName($constantName)->getValue();
                 } catch (IdentifierNotFound $e) {
                     throw Exception\UnableToCompileNode::becauseOfNotFoundConstantReference($context, $constNode);
                 }
