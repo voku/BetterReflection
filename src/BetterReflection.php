@@ -27,19 +27,40 @@ use Roave\BetterReflection\Util\FindReflectionOnLine;
 final class BetterReflection
 {
     /** @var SourceLocator|null */
+    private static $sharedSourceLocator;
+
+    /** @var SourceLocator|null */
     private $sourceLocator;
+
+    /** @var ClassReflector|null */
+    private static $sharedClassReflector;
 
     /** @var ClassReflector|null */
     private $classReflector;
 
     /** @var FunctionReflector|null */
+    private static $sharedFunctionReflector;
+
+    /** @var FunctionReflector|null */
     private $functionReflector;
+
+    /** @var ConstantReflector|null */
+    private static $sharedConstantReflector;
 
     /** @var ConstantReflector|null */
     private $constantReflector;
 
     /** @var Parser|null */
+    private static $sharedPhpParser;
+
+    /** @var Parser|null */
     private $phpParser;
+
+    /** @var SourceStubber|null */
+    private static $sharedSourceStubber;
+
+    /** @var SourceStubber|null */
+    private $sourceStubber;
 
     /** @var AstLocator|null */
     private $astLocator;
@@ -47,8 +68,31 @@ final class BetterReflection
     /** @var FindReflectionOnLine|null */
     private $findReflectionOnLine;
 
-    /** @var SourceStubber */
-    private $sourceStubber;
+    public static function populate(
+        SourceLocator $sourceLocator,
+        ClassReflector $classReflector,
+        FunctionReflector $functionReflector,
+        ConstantReflector $constantReflector,
+        Parser $phpParser,
+        SourceStubber $sourceStubber
+    ) : void {
+        self::$sharedSourceLocator     = $sourceLocator;
+        self::$sharedClassReflector    = $classReflector;
+        self::$sharedFunctionReflector = $functionReflector;
+        self::$sharedConstantReflector = $constantReflector;
+        self::$sharedPhpParser         = $phpParser;
+        self::$sharedSourceStubber     = $sourceStubber;
+    }
+
+    public function __construct()
+    {
+        $this->sourceLocator     = self::$sharedSourceLocator;
+        $this->classReflector    = self::$sharedClassReflector;
+        $this->functionReflector = self::$sharedFunctionReflector;
+        $this->constantReflector = self::$sharedConstantReflector;
+        $this->phpParser         = self::$sharedPhpParser;
+        $this->sourceStubber     = self::$sharedSourceStubber;
+    }
 
     public function sourceLocator() : SourceLocator
     {
