@@ -19,7 +19,7 @@ namespace Roave\BetterReflectionTest\Fixture {
 
         public function method($param1 = self::MY_CONST, $param2 = self::PARENT_CONST,
             $param3 = OtherClass::MY_CONST, $param4 = THIS_NAMESPACE_CONST,
-            $param5 = OTHER_NAMESPACE_CONST, $param6 = GLOBAL_CONSTANT, $param7 = UNSURE_CONSTANT)
+            $param5 = OTHER_NAMESPACE_CONST, $param6 = GLOBAL_CONSTANT, $param7 = UNSURE_CONSTANT, string $param8 = PHP_EOL)
         {
         }
     }

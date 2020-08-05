@@ -565,6 +565,11 @@ class ReflectionParameterTest extends TestCase
         $param7 = $method->getParameter('param7');
         self::assertSame('Roave\BetterReflectionTest\Fixture\UNSURE_CONSTANT', $param7->getDefaultValueConstantName());
         self::assertSame('here', $param7->getDefaultValue());
+
+        $param8 = $method->getParameter('param8');
+        self::assertInstanceOf(ReflectionType::class, $param8->getType());
+        self::assertSame('string', $param8->getType()->getName());
+        self::assertFalse($param8->allowsNull());
     }
 
     public function testGetDeclaringFunction() : void
