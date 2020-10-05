@@ -994,6 +994,36 @@ class PhpStormStubsSourceStubberTest extends TestCase
         self::assertTrue($reflection->isSubclassOf($subclassName));
     }
 
+    public function dataImmediateInterfaces(): array
+    {
+        return [
+            [
+                'PDOStatement',
+                ['Traversable'],
+                70400,
+            ],
+            [
+                'PDOStatement',
+                ['IteratorAggregate'],
+                80000,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider dataImmediateInterfaces
+     */
+    public function testImmediateInterfaces(
+        string $className,
+        array $interfaceNames,
+        int $phpVersionId
+    ) : void {
+        /** @var ClassReflector $classReflector */
+        [$classReflector] = $this->getReflectors($phpVersionId);
+        $reflection       = $classReflector->reflect($className);
+        self::assertSame($interfaceNames, array_keys($reflection->getImmediateInterfaces()));
+    }
+
     /**
      * @return array{ClassReflector, FunctionReflector, ConstantReflector}
      */

@@ -168,6 +168,10 @@ final class PhpStormStubsSourceStubber implements SourceStubber
             $stub = str_replace(' extends \iterable', '', $stub);
         }
 
+        if ($className === 'PDOStatement' && $this->phpVersionId < 80000) {
+            $stub = str_replace('implements \IteratorAggregate', 'implements \Traversable', $stub);
+        }
+
         return new StubData($stub, $this->getExtensionFromFilePath($filePath), $this->getAbsoluteFilePath($filePath));
     }
 
