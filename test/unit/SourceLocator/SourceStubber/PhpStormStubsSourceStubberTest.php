@@ -708,6 +708,30 @@ class PhpStormStubsSourceStubberTest extends TestCase
                 80000,
                 true,
             ],
+            [
+                'ReflectionClassConstant',
+                'export',
+                70400,
+                true,
+            ],
+            [
+                'ReflectionClassConstant',
+                'export',
+                80000,
+                false,
+            ],
+            [
+                'ReflectionFunction',
+                'export',
+                70400,
+                true,
+            ],
+            [
+                'ReflectionFunction',
+                'export',
+                80000,
+                false,
+            ],
         ];
     }
 
@@ -848,6 +872,21 @@ class PhpStormStubsSourceStubberTest extends TestCase
             [
                 'array_key_first',
                 70200,
+                false,
+            ],
+            [
+                'mcrypt_ecb',
+                50600,
+                true,
+            ],
+            [
+                'mcrypt_ecb',
+                70000,
+                false,
+            ],
+            [
+                'mcrypt_ecb',
+                70100,
                 false,
             ],
         ];

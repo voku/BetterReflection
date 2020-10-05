@@ -354,16 +354,27 @@ final class PhpStormStubsSourceStubber implements SourceStubber
             return false;
         }
 
-        $result = preg_match('#@since\s+(\d+\.\d+(?:\.\d+)?)#', $docComment->getText(), $matches);
-        if (! $result) {
-            return false;
+        $sinceResult = preg_match('#@since\s+(\d+\.\d+(?:\.\d+)?)#', $docComment->getText(), $sinceMatches);
+        if ($sinceResult) {
+            $since      = $sinceMatches[1];
+            $sinceParts = explode('.', $since);
+            $sinceId    = $sinceParts[0] * 10000 + $sinceParts[1] * 100 + ($sinceParts[2] ?? 0);
+
+            if ($sinceId > $this->phpVersionId) {
+                return true;
+            }
         }
 
-        $since      = $matches[1];
-        $sinceParts = explode('.', $since);
-        $sinceId    = $sinceParts[0] * 10000 + $sinceParts[1] * 100 + ($sinceParts[2] ?? 0);
+        $removedResult = preg_match('#@removed\s+(\d+\.\d+(?:\.\d+)?)#', $docComment->getText(), $removedMatches);
+        if ($removedResult) {
+            $removed      = $removedMatches[1];
+            $removedParts = explode('.', $removed);
+            $removedId    = $removedParts[0] * 10000 + $removedParts[1] * 100 + ($removedParts[2] ?? 0);
 
-        return $sinceId > $this->phpVersionId;
+            return $removedId <= $this->phpVersionId;
+        }
+
+        return false;
     }
 
     /**
