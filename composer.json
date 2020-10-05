@@ -9,7 +9,7 @@
         "nikic/php-parser": "4.10.2",
         "phpdocumentor/reflection-docblock": "^4.3.4 || ^5.2.0",
         "phpdocumentor/type-resolver": "^1.0.0",
-        "roave/signature": "^1.0"
+        "roave/signature": "1.1.0"
     },
     "authors": [
         {
