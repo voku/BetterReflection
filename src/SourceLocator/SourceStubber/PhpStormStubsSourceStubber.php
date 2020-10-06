@@ -118,6 +118,32 @@ final class PhpStormStubsSourceStubber implements SourceStubber
         return array_key_exists($lowercaseClassName, $this->classMap);
     }
 
+    public function isPresentClass(string $className) : ?bool
+    {
+        $lowercaseClassName = strtolower($className);
+        if (! array_key_exists($lowercaseClassName, $this->classMap)) {
+            return null;
+        }
+
+        $filePath  = $this->classMap[$lowercaseClassName];
+        $classNode = $this->findClassNode($filePath, $lowercaseClassName);
+
+        return $classNode !== null;
+    }
+
+    public function isPresentFunction(string $functionName) : ?bool
+    {
+        $lowercaseFunctionName = strtolower($functionName);
+        if (! array_key_exists($lowercaseFunctionName, $this->functionMap)) {
+            return null;
+        }
+
+        $filePath     = $this->functionMap[$lowercaseFunctionName];
+        $functionNode = $this->findFunctionNode($filePath, $lowercaseFunctionName);
+
+        return $functionNode !== null;
+    }
+
     public function generateClassStub(string $className) : ?StubData
     {
         $lowercaseClassName = strtolower($className);
@@ -213,8 +239,17 @@ final class PhpStormStubsSourceStubber implements SourceStubber
             return null;
         }
 
-        $filePath = $this->functionMap[$lowercaseFunctionName];
+        $filePath     = $this->functionMap[$lowercaseFunctionName];
+        $functionNode = $this->findFunctionNode($filePath, $lowercaseFunctionName);
+        if ($functionNode === null) {
+            return null;
+        }
 
+        return new StubData($this->createStub($functionNode), $this->getExtensionFromFilePath($filePath));
+    }
+
+    private function findFunctionNode(string $filePath, string $lowercaseFunctionName) : ?Node\Stmt\Function_
+    {
         if (! array_key_exists($lowercaseFunctionName, $this->functionNodes)) {
             $this->parseFile($filePath);
 
@@ -225,7 +260,7 @@ final class PhpStormStubsSourceStubber implements SourceStubber
             }
         }
 
-        return new StubData($this->createStub($this->functionNodes[$lowercaseFunctionName]), $this->getExtensionFromFilePath($filePath));
+        return $this->functionNodes[$lowercaseFunctionName];
     }
 
     public function generateConstantStub(string $constantName) : ?StubData

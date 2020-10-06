@@ -33,8 +33,10 @@ use Roave\BetterReflection\SourceLocator\SourceStubber\SourceStubber;
 use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use Roave\BetterReflectionTest\BetterReflectionSingleton;
 use function array_filter;
+use function array_keys;
 use function array_map;
 use function array_merge;
+use function assert;
 use function get_declared_classes;
 use function get_declared_interfaces;
 use function get_declared_traits;
@@ -994,7 +996,7 @@ class PhpStormStubsSourceStubberTest extends TestCase
         self::assertTrue($reflection->isSubclassOf($subclassName));
     }
 
-    public function dataImmediateInterfaces(): array
+    public function dataImmediateInterfaces() : array
     {
         return [
             [
@@ -1018,10 +1020,86 @@ class PhpStormStubsSourceStubberTest extends TestCase
         array $interfaceNames,
         int $phpVersionId
     ) : void {
-        /** @var ClassReflector $classReflector */
         [$classReflector] = $this->getReflectors($phpVersionId);
-        $reflection       = $classReflector->reflect($className);
+        assert($classReflector instanceof ClassReflector);
+        $reflection = $classReflector->reflect($className);
         self::assertSame($interfaceNames, array_keys($reflection->getImmediateInterfaces()));
+    }
+
+    public function dataIsPresentClass() : array
+    {
+        return [
+            [
+                'DOMImplementationList',
+                80000,
+                false,
+            ],
+            [
+                'DOMImplementationList',
+                70400,
+                true,
+            ],
+            [
+                'ReflectionClass',
+                70100,
+                true,
+            ],
+            [
+                'AbcAbc',
+                70100,
+                null,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider dataIsPresentClass
+     */
+    public function testIsPresentClass(string $className, int $phpVersionId, ?bool $expected) : void
+    {
+        $parser        = (new ParserFactory())->create(ParserFactory::PREFER_PHP7, new Emulative([
+            'usedAttributes' => ['comments', 'startLine', 'endLine', 'startFilePos', 'endFilePos'],
+        ]));
+        $sourceStubber = new PhpStormStubsSourceStubber($parser, $phpVersionId);
+        self::assertSame($expected, $sourceStubber->isPresentClass($className));
+    }
+
+    public function dataIsPresentFunction() : array
+    {
+        return [
+            [
+                'money_format',
+                70400,
+                true,
+            ],
+            [
+                'money_format',
+                80000,
+                false,
+            ],
+            [
+                'htmlspecialchars',
+                70400,
+                true,
+            ],
+            [
+                'blabla',
+                70400,
+                null,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider dataIsPresentFunction
+     */
+    public function testIsPresentFunction(string $functionName, int $phpVersionId, ?bool $expected) : void
+    {
+        $parser        = (new ParserFactory())->create(ParserFactory::PREFER_PHP7, new Emulative([
+            'usedAttributes' => ['comments', 'startLine', 'endLine', 'startFilePos', 'endFilePos'],
+        ]));
+        $sourceStubber = new PhpStormStubsSourceStubber($parser, $phpVersionId);
+        self::assertSame($expected, $sourceStubber->isPresentFunction($functionName));
     }
 
     /**
