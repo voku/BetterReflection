@@ -1013,6 +1013,8 @@ class PhpStormStubsSourceStubberTest extends TestCase
     }
 
     /**
+     * @param string[] $interfaceNames
+     *
      * @dataProvider dataImmediateInterfaces
      */
     public function testImmediateInterfaces(
