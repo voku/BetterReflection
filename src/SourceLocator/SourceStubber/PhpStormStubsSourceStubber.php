@@ -128,17 +128,6 @@ final class PhpStormStubsSourceStubber implements SourceStubber
 
         $filePath  = $this->classMap[$lowercaseClassName];
         $classNode = $this->findClassNode($filePath, $lowercaseClassName);
-
-        if (! array_key_exists($lowercaseClassName, $this->classNodes)) {
-            $this->parseFile($filePath);
-
-            if (! array_key_exists($lowercaseClassName, $this->classNodes)) {
-                $this->classNodes[$lowercaseClassName] = null;
-
-                return null;
-            }
-        }
-
         if ($classNode === null) {
             return null;
         }
