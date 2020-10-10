@@ -179,10 +179,6 @@ class PhpStormStubsSourceStubberTest extends TestCase
 
         foreach ($original->getMethods() as $method) {
             // Needs fix in JetBrains/phpstorm-stubs
-            if ($original->getName() === 'Generator' && $method->getName() === 'throw') {
-                continue;
-            }
-
             // Added in PHP 7.4.0
             if (PHP_VERSION_ID < 70400 && $method->getShortName() === '__unserialize') {
                 continue;
@@ -290,6 +286,7 @@ class PhpStormStubsSourceStubberTest extends TestCase
                 'Error#__construct.previous',
                 'Exception#__construct.previous',
                 'Closure#bind.closure',
+                'Generator#throw.exception',
             ], true)) {
                 self::assertNull($stubbed->getClass(), $parameterName);
             }

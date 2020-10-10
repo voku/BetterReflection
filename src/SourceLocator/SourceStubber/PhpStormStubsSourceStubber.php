@@ -419,7 +419,10 @@ final class PhpStormStubsSourceStubber implements SourceStubber
             $node = $namespaceBuilder->getNode();
         }
 
-        return "<?php\n\n" . $this->prettyPrinter->prettyPrint([$node]) . ($node instanceof Node\Expr\FuncCall ? ';' : '') . "\n";
+        $printed = $this->prettyPrinter->prettyPrint([$node]);
+        $printed = str_replace('PS_UNRESERVE_PREFIX_', '', $printed);
+
+        return "<?php\n\n" . $printed . ($node instanceof Node\Expr\FuncCall ? ';' : '') . "\n";
     }
 
     private function createCachingVisitor() : NodeVisitorAbstract
