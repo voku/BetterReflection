@@ -1016,6 +1016,16 @@ class PhpStormStubsSourceStubberTest extends TestCase
                 ['Iterator', 'ArrayAccess', 'Countable', 'IteratorAggregate'],
                 80000,
             ],
+            [
+                'SimpleXMLElement',
+                ['Traversable', 'ArrayAccess', 'Countable', 'Iterator'],
+                70400,
+            ],
+            [
+                'SimpleXMLElement',
+                ['Traversable', 'ArrayAccess', 'Countable', 'Iterator', 'Stringable', 'RecursiveIterator'],
+                80000,
+            ],
         ];
     }
 
