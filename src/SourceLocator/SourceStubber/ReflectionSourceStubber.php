@@ -458,7 +458,11 @@ final class ReflectionSourceStubber implements SourceStubber
             $this->addParameterModifiers($parameterReflection, $parameterNode);
 
             if ($parameterReflection->isOptional() && ! $parameterReflection->isVariadic()) {
-                $parameterNode->setDefault($this->parameterDefaultValue($parameterReflection, $functionReflectionAbstract));
+                if ($parameterReflection->isDefaultValueAvailable()) {
+                    $parameterNode->setDefault($this->parameterDefaultValue($parameterReflection, $functionReflectionAbstract));
+                } else {
+                    $parameterNode->setDefault(null);
+                }
             }
 
             $functionNode->addParam($this->addParameterModifiers($parameterReflection, $parameterNode));
