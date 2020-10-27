@@ -1300,7 +1300,7 @@ class ReflectionClass implements Reflection
         $node = $this->node;
 
         if ($node instanceof ClassNode) {
-            return array_merge(
+            $interfaces = array_merge(
                 [],
                 ...array_map(
                     function (Node\Name $interfaceName) : array {
@@ -1311,6 +1311,25 @@ class ReflectionClass implements Reflection
                     $node->implements
                 )
             );
+
+            if (BetterReflection::$phpVersion >= 80000) {
+                foreach ($node->getMethods() as $method) {
+                    if ($method->name->toLowerString() !== '__tostring') {
+                        continue;
+                    }
+
+                    foreach ($interfaces as $interface) {
+                        if ($interface->getName() === 'Stringable') {
+                            return $interfaces;
+                        }
+                    }
+
+                    $interfaces['Stringable'] = $this->reflectClassForNamedNode(new Node\Name('Stringable'));
+                    break;
+                }
+            }
+
+            return $interfaces;
         }
 
         // assumption: first key is the current interface
@@ -1350,7 +1369,7 @@ class ReflectionClass implements Reflection
         $node = $this->node;
         assert($node instanceof InterfaceNode);
 
-        return array_merge(
+        $interfaces = array_merge(
             [$this->getName() => $this],
             ...array_map(
                 function (Node\Name $interfaceName) : array {
@@ -1361,6 +1380,25 @@ class ReflectionClass implements Reflection
                 $node->extends
             )
         );
+
+        if (BetterReflection::$phpVersion >= 80000) {
+            foreach ($node->getMethods() as $method) {
+                if ($method->name->toLowerString() !== '__tostring') {
+                    continue;
+                }
+
+                foreach ($interfaces as $interface) {
+                    if ($interface->getName() === 'Stringable') {
+                        return $interfaces;
+                    }
+                }
+
+                $interfaces['Stringable'] = $this->reflectClassForNamedNode(new Node\Name('Stringable'));
+                break;
+            }
+        }
+
+        return $interfaces;
     }
 
     /**

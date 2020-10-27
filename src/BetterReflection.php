@@ -23,6 +23,7 @@ use Roave\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use Roave\BetterReflection\SourceLocator\Type\SourceLocator;
 use Roave\BetterReflection\Util\FindReflectionOnLine;
+use const PHP_VERSION_ID;
 
 final class BetterReflection
 {
