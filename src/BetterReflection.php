@@ -157,7 +157,7 @@ final class BetterReflection
     {
         return $this->sourceStubber
             ?? $this->sourceStubber = new AggregateSourceStubber(
-                new PhpStormStubsSourceStubber($this->phpParser()),
+                new PhpStormStubsSourceStubber($this->phpParser(), self::$phpVersion),
                 new ReflectionSourceStubber()
             );
     }
