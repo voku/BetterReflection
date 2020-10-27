@@ -26,6 +26,9 @@ use Roave\BetterReflection\Util\FindReflectionOnLine;
 
 final class BetterReflection
 {
+    /** @var int */
+    public static $phpVersion = PHP_VERSION_ID;
+
     /** @var SourceLocator|null */
     private static $sharedSourceLocator;
 
