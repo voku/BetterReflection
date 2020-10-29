@@ -25,6 +25,3 @@ Better Reflection is a reflection API that aims to improve and provide more feat
 
 This package is released under the [MIT license](LICENSE).
 
-## Contributing
-
-If you wish to contribute to the project, please read the [CONTRIBUTING notes](CONTRIBUTING.md).
