@@ -1,15 +1,15 @@
 {
-    "name": "ondrejmirtes/better-reflection",
+    "name": "voku/better-reflection",
     "description": "Better Reflection - an improved code reflection API",
     "license": "MIT",
     "require": {
-        "php": ">=7.1.0",
+        "php": ">=7.2.0",
         "ext-json": "*",
         "jetbrains/phpstorm-stubs": "dev-master#312fcf779d5bcec5b4059b9e45ba11e575a9aacf",
-        "nikic/php-parser": "4.10.2",
-        "phpdocumentor/reflection-docblock": "^4.3.4 || ^5.2.0",
-        "phpdocumentor/type-resolver": "^1.0.0",
-        "roave/signature": "1.1.0"
+        "nikic/php-parser": "~4.10",
+        "phpdocumentor/reflection-docblock": "~5.2",
+        "phpdocumentor/type-resolver": "~1.4",
+        "roave/signature": "~1.3"
     },
     "authors": [
         {
@@ -35,9 +35,9 @@
 
     ],
     "require-dev": {
-        "phpstan/phpstan": "^0.12.49",
-        "phpunit/phpunit": "^7.5.18",
-        "vimeo/psalm": "3.11.2"
+        "phpstan/phpstan": "~0.12",
+        "phpunit/phpunit": "~7.5",
+        "vimeo/psalm": "~3.18"
     },
     "autoload": {
         "psr-4": {
